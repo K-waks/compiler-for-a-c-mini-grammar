@@ -89,12 +89,9 @@ struct token
         unsigned long long llnum;
         void *any;
     };
-
-    // True if their is whitespace between the token and the next token
-    // i.e * a for operator token * would mean whitespace would be set for token "a"
+    
     bool whitespace;
 
-    // (5+10+20)
     const char between_brackets[];
 };
 
