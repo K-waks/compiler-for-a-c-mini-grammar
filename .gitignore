@@ -1,0 +1,7 @@
+main
+
+compiler/build/*.o
+
+compiler/build/helpers/*.o
+
+sample/program
