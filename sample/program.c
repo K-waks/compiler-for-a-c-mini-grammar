@@ -2,8 +2,6 @@
 A program to find the sum of numbers from 0 till the number inputed by the user
 */
 
-#include <stdio.h>
-
 int sum(int n)
 {
     if (n <= 1)
