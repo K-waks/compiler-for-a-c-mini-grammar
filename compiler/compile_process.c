@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include "compiler.h"
 
-struct compile_process *compile_process_create(const char sourcefile[], const char outputfile[], int flags)
+struct compile_process *compile_process_create(const char *sourcefile, const char *outputfile, int flags)
 {
 	FILE *file = fopen(sourcefile, "r");
 	if (!file)

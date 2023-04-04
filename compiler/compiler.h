@@ -92,7 +92,7 @@ struct token
     
     bool whitespace;
 
-    const char between_brackets[];
+    const char *between_brackets;
 };
 
 struct lex_process;
@@ -140,7 +140,7 @@ struct compile_process
     struct compile_process_input_file
     {
         FILE *fp;
-        const char abs_path[];
+        const char *abs_path;
     } cfile;
 
     // A vector of tokens from lexical analysis.
@@ -148,9 +148,9 @@ struct compile_process
     FILE *ofile;
 };
 
-int compile_c_file(const char sourcefilename[], const char outputfilename[], int flags);
+int compile_c_file(const char *sourcefile, const char *outputfile, int flags);
 
-struct compile_process *compile_process_create(const char sourcefile[], const char outputfile[], int flags);
+struct compile_process *compile_process_create(const char *sourcefile, const char *outputfile, int flags);
 
 char compile_process_next_char(struct lex_process *lex_process);
 char compile_process_peek_char(struct lex_process *lex_process);
