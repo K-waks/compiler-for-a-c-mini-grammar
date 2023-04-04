@@ -56,63 +56,6 @@ int compile_c_file(const char *sourcefile, const char *outputfile, int flags)
     // token list
     process->token_vec = lex_process->token_vec;
 
-    // puts("TOKEN_TYPE_IDENTIFIER\n");
-    // for (int i = 0; i < vector_count(process->token_vec); i++)
-    // {
-    //     struct token tkn = *(struct token *)vector_at(process->token_vec, i);
-    //     if (tkn.type == TOKEN_TYPE_IDENTIFIER)
-    //         printf("%s ", tkn.sval);
-    // }
-
-    // printf("\n\nTOKEN_TYPE_KEYWORD\n");
-    // for (int i = 0; i < vector_count(process->token_vec); i++)
-    // {
-    //     struct token tkn = *(struct token *)vector_at(process->token_vec, i);
-    //     if (tkn.type == TOKEN_TYPE_KEYWORD)
-    //         printf("%s ", tkn.sval);
-    // }
-
-    //  printf("\n\nTOKEN_TYPE_OPERATOR\n");
-    // for (int i = 0; i < vector_count(process->token_vec); i++)
-    // {
-    //     struct token tkn = *(struct token *)vector_at(process->token_vec, i);
-    //     if (tkn.type == TOKEN_TYPE_OPERATOR)
-    //         printf("%s ", tkn.sval);
-    // }
-
-    //  printf("\n\nTOKEN_TYPE_SYMBOL\n");
-    // for (int i = 0; i < vector_count(process->token_vec); i++)
-    // {
-    //     struct token tkn = *(struct token *)vector_at(process->token_vec, i);
-    //     if (tkn.type == TOKEN_TYPE_SYMBOL)
-    //         printf("%c ", tkn.cval);
-    // }
-
-    //  printf("\n\nTOKEN_TYPE_NUMBER\n");
-    // for (int i = 0; i < vector_count(process->token_vec); i++)
-    // {
-    //     struct token tkn = *(struct token *)vector_at(process->token_vec, i);
-    //     if (tkn.type == TOKEN_TYPE_NUMBER)
-    //         printf("%d ", tkn.inum);
-    // }
-
-    //  printf("\n\nTOKEN_TYPE_STRING\n");
-    // for (int i = 0; i < vector_count(process->token_vec); i++)
-    // {
-    //     struct token tkn = *(struct token *)vector_at(process->token_vec, i);
-    //     if (tkn.type == TOKEN_TYPE_STRING)
-    //         printf("%s ", tkn.sval);
-    // }
-
-    // printf("\n\nTOKEN_TYPE_COMMENT\n");
-    // for (int i = 0; i < vector_count(process->token_vec); i++)
-    // {
-    //     struct token tkn = *(struct token *)vector_at(process->token_vec, i);
-    //     if (tkn.type == TOKEN_TYPE_COMMENT)
-    //         printf("%s ", tkn.sval);
-    // }
-
-
     for (int i = 0; i < vector_count(process->token_vec); i++)
     {
         struct token tkn = *(struct token *)vector_at(process->token_vec, i);
@@ -138,20 +81,76 @@ int compile_c_file(const char *sourcefile, const char *outputfile, int flags)
             printf("%s\n", tkn.sval);
             break;
         case TOKEN_TYPE_COMMENT:
-            // we'll not pass the comment token to the parser
+            printf("%s\n", tkn.sval);
             break;
         case TOKEN_TYPE_NEWLINE:
-            // we'll not pass the newline token to the parser
+            printf("%c\n", tkn.cval);
             break;
         default:
             break;
         }
     }
 
+    puts("\n\nTOKEN_TYPE_IDENTIFIER\n");
+    for (int i = 0; i < vector_count(process->token_vec); i++)
+    {
+        struct token tkn = *(struct token *)vector_at(process->token_vec, i);
+        if (tkn.type == TOKEN_TYPE_IDENTIFIER)
+            printf("%s ", tkn.sval);
+    }
+
+    printf("\n\nTOKEN_TYPE_KEYWORD\n");
+    for (int i = 0; i < vector_count(process->token_vec); i++)
+    {
+        struct token tkn = *(struct token *)vector_at(process->token_vec, i);
+        if (tkn.type == TOKEN_TYPE_KEYWORD)
+            printf("%s ", tkn.sval);
+    }
+
+    printf("\n\nTOKEN_TYPE_OPERATOR\n");
+    for (int i = 0; i < vector_count(process->token_vec); i++)
+    {
+        struct token tkn = *(struct token *)vector_at(process->token_vec, i);
+        if (tkn.type == TOKEN_TYPE_OPERATOR)
+            printf("%s ", tkn.sval);
+    }
+
+    printf("\n\nTOKEN_TYPE_SYMBOL\n");
+    for (int i = 0; i < vector_count(process->token_vec); i++)
+    {
+        struct token tkn = *(struct token *)vector_at(process->token_vec, i);
+        if (tkn.type == TOKEN_TYPE_SYMBOL)
+            printf("%c ", tkn.cval);
+    }
+
+    printf("\n\nTOKEN_TYPE_NUMBER\n");
+    for (int i = 0; i < vector_count(process->token_vec); i++)
+    {
+        struct token tkn = *(struct token *)vector_at(process->token_vec, i);
+        if (tkn.type == TOKEN_TYPE_NUMBER)
+            printf("%d ", tkn.inum);
+    }
+
+    printf("\n\nTOKEN_TYPE_STRING\n");
+    for (int i = 0; i < vector_count(process->token_vec); i++)
+    {
+        struct token tkn = *(struct token *)vector_at(process->token_vec, i);
+        if (tkn.type == TOKEN_TYPE_STRING)
+            printf("%s ", tkn.sval);
+    }
+
+    printf("\n\nTOKEN_TYPE_COMMENT\n");
+    for (int i = 0; i < vector_count(process->token_vec); i++)
+    {
+        struct token tkn = *(struct token *)vector_at(process->token_vec, i);
+        if (tkn.type == TOKEN_TYPE_COMMENT)
+            printf("%s ", tkn.sval);
+    }
+
     end = clock();
     cpu_time_used = ((double)(end - start)) / CLOCKS_PER_SEC;
     putchar('\n');
-    puts("\nScanning complete✅ ! 😘");
+    puts("\nScanning complete✅ !");
     printf("Scanner execution time: %f seconds\n", cpu_time_used);
 
     /* ************************** PARSING ******************************** */
