@@ -74,6 +74,12 @@ enum
     TOKEN_TYPE_NEWLINE
 };
 
+enum
+{
+    NUMBER_TYPE_NORMAL,
+    NUMBER_TYPE_FLOAT,
+};
+
 struct token
 {
     int type;
@@ -84,11 +90,17 @@ struct token
     {
         char cval;
         const char *sval;
+        float fnum;
         unsigned int inum;
         unsigned long lnum;
         unsigned long long llnum;
         void *any;
     };
+
+    struct token_number
+    {
+        int type;
+    } num;
     
     bool whitespace;
 

@@ -85,32 +85,77 @@ static struct token *handle_whitespace()
     return read_next_token();
 }
 
+// ************************************** NUMBER ***********************************************
+
 const char *read_number_str()
 {
     const char *num = NULL;
     struct buffer *buffer = buffer_create();
     char c = peekc();
-    LEX_GETC_IF(buffer, c, (c >= '0' && c <= '9'));
+    LEX_GETC_IF(buffer, c, ((c >= '0' && c <= '9') || c == '.' || (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || c == '_'));
 
     buffer_write(buffer, 0x00);
     return buffer_ptr(buffer);
 }
 
-unsigned long long read_number()
+// unsigned long long read_number()
+// {
+//     const char *s = read_number_str();
+//     return atoll(s);
+// }
+
+float read_number()
 {
     const char *s = read_number_str();
-    return atoll(s);
+
+    for (char i = 'a'; i <= 'z'; i++)
+    {
+        if (strchr(s, i) != NULL)
+        {
+            compiler_error(lex_process->compiler, "Unexpected token\n");
+        }
+    }
+
+    for (char i = 'A'; i <= 'Z'; i++)
+    {
+        if (strchr(s, i) != NULL)
+        {
+            compiler_error(lex_process->compiler, "Unexpected token\n");
+        }
+    }
+
+    if (strchr(s, '_') != NULL)
+    {
+        compiler_error(lex_process->compiler, "Unexpected token\n");
+    }
+
+    return atof(s);
 }
 
-struct token *token_make_number_for_value(unsigned long number)
+bool isInteger(float number)
 {
-    return token_create(&(struct token){.type = TOKEN_TYPE_NUMBER, .llnum = number});
+    int truncated = (int)number;
+    return (number == truncated);
+}
+
+struct token *token_make_number_for_value(float number)
+{
+    if (isInteger(number))
+    {
+        return token_create(&(struct token){.type = TOKEN_TYPE_NUMBER, .llnum = (int)number, .num.type = NUMBER_TYPE_NORMAL});
+    }
+    else
+    {
+        return token_create(&(struct token){.type = TOKEN_TYPE_NUMBER, .fnum = number, .num.type = NUMBER_TYPE_FLOAT});
+    }
 }
 
 struct token *token_make_number()
 {
     return token_make_number_for_value(read_number());
 }
+
+// ************************************** STRING ***********************************************
 
 static struct token *token_make_string(char start_delim, char end_delim)
 {
@@ -132,9 +177,11 @@ static struct token *token_make_string(char start_delim, char end_delim)
     return token_create(&(struct token){.type = TOKEN_TYPE_STRING, .sval = buffer_ptr(buf)});
 }
 
+// ************************************** OPERATOR ***********************************************
+
 static bool op_treated_as_one(char op)
 {
-    return op == '(' || op == '[' || op == ',' || op == '.' || op == '*' || op == '?';
+    return op == '(' || op == '[' || op == ',' || op == '*' || op == '?';
 }
 
 static bool is_single_operator(char op)
@@ -190,7 +237,7 @@ bool op_valid(const char *op)
            S_EQ(op, "(") ||
            S_EQ(op, "[") ||
            S_EQ(op, ",") ||
-           S_EQ(op, ".") ||
+           //    S_EQ(op, ".") ||
            S_EQ(op, "...") ||
            S_EQ(op, "~") ||
            S_EQ(op, "?") ||
@@ -327,6 +374,8 @@ static struct token *token_make_operator_or_string()
     return token;
 }
 
+// ************************************** COMMENT ***********************************************
+
 struct token *token_make_one_line_comment()
 {
     struct buffer *buffer = buffer_create();
@@ -384,6 +433,8 @@ struct token *handle_comment()
     return NULL;
 }
 
+// ************************************** SYMBOL ***********************************************
+
 static struct token *token_make_symbol()
 {
     char c = nextc();
@@ -395,6 +446,8 @@ static struct token *token_make_symbol()
     struct token *token = token_create(&(struct token){.type = TOKEN_TYPE_SYMBOL, .cval = c});
     return token;
 }
+
+// ************************************** IDENTIFIER OR KEYWORD ***********************************************
 
 static struct token *token_make_identifier_or_keyword()
 {
@@ -425,6 +478,8 @@ struct token *read_special_token()
 
     return NULL;
 }
+
+// ************************************** NEWLINE ***********************************************
 
 struct token *token_make_newline()
 {
@@ -501,8 +556,8 @@ struct token *read_next_token()
     case '\'':
         token = token_make_quote();
         break;
-    // We don't care about whitespace ignore them
     case ' ':
+        // We don't care about whitespace ignore them
     case '\t':
         token = handle_whitespace();
         break;

@@ -22,3 +22,5 @@ int main()
     printf("Sum of numbers from 0 till %d is %d.", n, sum(n));
     return (0);
 }
+
+if (232a3 >= "ast" || 23.5 <= 90.s3) do {a2 = 89}
