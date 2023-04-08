@@ -76,7 +76,7 @@ int compile_c_file(const char *sourcefile, const char *outputfile, int flags)
         }
         else if (tkn.type == TOKEN_TYPE_NUMBER && tkn.num.type == NUMBER_TYPE_NORMAL)
         {
-            printf("TOKEN_TYPE_NUMBER:           %d\n", tkn.llnum);
+            printf("TOKEN_TYPE_NUMBER:           %lld\n", tkn.llnum);
         }
 
         else if (tkn.type == TOKEN_TYPE_NUMBER && tkn.num.type == NUMBER_TYPE_FLOAT)
