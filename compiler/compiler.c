@@ -88,10 +88,10 @@ int compile_c_file(const char *sourcefile, const char *outputfile, int flags)
         {
             printf("TOKEN_TYPE_STRING:           %s\n", tkn.sval);
         }
-        else if (tkn.type == TOKEN_TYPE_COMMENT)
-        {
-            printf("TOKEN_TYPE_COMMENT:          %s\n", tkn.sval);
-        }
+        // else if (tkn.type == TOKEN_TYPE_COMMENT)
+        // {
+        //     printf("TOKEN_TYPE_COMMENT:          %s\n", tkn.sval);
+        // }
         // else if (tkn.type == TOKEN_TYPE_NEWLINE)
         // {
         //     printf("TOKEN_TYPE_NEWLINE:          %c\n", tkn.cval);
@@ -111,7 +111,6 @@ int compile_c_file(const char *sourcefile, const char *outputfile, int flags)
     /* ************************** PARSING ******************************** */
     
     /* ************************* CODE GENERATION **************************** */
-    
 
     return COMPILATION_COMPLETE;
 }
