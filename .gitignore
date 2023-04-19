@@ -8,4 +8,10 @@ sample/program
 
 ~roughwork
 
-compile
+compiler
+
+test*
+
+.vscode
+
+compiler.h
