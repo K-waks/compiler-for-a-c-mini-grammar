@@ -1,0 +1,11 @@
+~old_grp11Ccompiler/main
+
+~old_grp11Ccompiler/compiler/build/*.o
+
+~old_grp11Ccompiler/compiler/build/helpers/*.o
+
+sample/program
+
+~roughwork
+
+compile
