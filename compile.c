@@ -55,7 +55,7 @@ struct Tkn
 
 struct Tkn tokens[1000]; // Maximum 1000 tokens
 int num_tokens = 0;
-int pos;
+int pos = 0;
 
 enum Token get_token(FILE *fp, char *buffer)
 {
@@ -82,7 +82,7 @@ enum Token get_token(FILE *fp, char *buffer)
             }
             ungetc(c, fp);
             buffer[buffer_len] = '\0';
-            if (strcmp(buffer, "int") == 0 || strcmp(buffer, "return") == 0)
+            if (strcmp(buffer, "int") == 0 || strcmp(buffer, "return") == 0 || strcmp(buffer, "void") == 0 || strcmp(buffer, "char") == 0)
             {
                 return KEYWORD;
             }
@@ -154,7 +154,7 @@ enum Token get_token(FILE *fp, char *buffer)
                 (c == '|' && c2 == '|') || // dealing with ||
                 (c == '&' && c2 == '&'))   // dealing with &&
             {
-                buffer[buffer_len++] = c2;
+                buffer[buffer_len++] = c2; // +
             }
             else
             {
@@ -213,6 +213,7 @@ int main()
         strcpy(current_tkn.value, buffer);
         tokens[num_tokens++] = current_tkn;
     }
+    // tokens[num_tokens++].token_type = EOF;
 
     // printing to the terminal
     for (int i = 0; i < num_tokens; i++)
@@ -290,11 +291,11 @@ void program()
 
 void statement()
 {
-    if (current_token == KEYWORD && strcmp(buffer, "int") == 0)
+    if (current_token == KEYWORD && strcmp(tokens[pos].value, "int") == 0)
     {
         variable_declaration();
     }
-    else if (current_token == KEYWORD && strcmp(buffer, "void") == 0)
+    else if (current_token == KEYWORD && strcmp(tokens[pos].value, "void") == 0)
     {
         function_declaration();
     }
@@ -306,16 +307,16 @@ void statement()
 
 void variable_declaration()
 {
-    if (current_token == KEYWORD && strcmp(buffer, "int") == 0)
+    if (current_token == KEYWORD && strcmp(tokens[pos].value, "int") == 0)
     {
         pos++;
         current_token = tokens[pos].token_type; // Consume the "int" keyword
-        if (current_token == IDENTIFIER) // Expect an identifier
+        if (current_token == IDENTIFIER)        // Expect an identifier
         {
-            printf("Variable declared: %s\n", buffer); // Do something with the identifier, like add it to a symbol table
+            printf("Variable declared: %s\n", tokens[pos].value); // Do something with the identifier, like add it to a symbol table
             pos++;
             current_token = tokens[pos].token_type; // Consume the identifier and semicolon
-            if (current_token != SYMBOL || buffer[0] != ';')
+            if (current_token != SYMBOL || strcmp(tokens[pos].value, ";") == 1)
             {
                 printf("Expected semicolon at end of variable declaration\n");
                 exit(EXIT_FAILURE);
