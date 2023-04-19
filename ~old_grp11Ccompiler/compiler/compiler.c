@@ -4,6 +4,8 @@
 #include "compiler.h"
 #include "helpers/vector.h"
 
+char lookahead;
+
 struct lex_process_functions compiler_lex_functions = {
     .next_char = compile_process_next_char,
     .peek_char = compile_process_peek_char,
@@ -109,7 +111,60 @@ int compile_c_file(const char *sourcefile, const char *outputfile, int flags)
     printf("Scanner execution time: %f seconds\n", cpu_time_used);
 
     /* ************************** PARSING ******************************** */
+
     
+
+    int match(char c)
+    {
+        if (lookahead == c)
+        {
+            lookahead = getchar();
+        }
+        else
+        {
+            fprintf(stderr, "Error: expected '%c' but got '%c'\n", c, lookahead);
+            exit(1);
+        }
+    }
+
+    int is_digit(char c)
+    {
+        return (c >= '0' && c <= '9');
+    }
+
+    int digit()
+    {
+        if (is_digit(lookahead))
+        {
+            int val = lookahead - '0';
+            match(lookahead);
+            return val;
+        }
+        else
+        {
+            fprintf(stderr, "Error: expected digit but got '%c'\n", lookahead);
+            exit(1);
+        }
+    }
+
+    int number()
+    {
+        int val = digit();
+        while (is_digit(lookahead))
+        {
+            val = val * 10 + digit();
+        }
+        return val;
+    }
+
+    int main()
+    {
+        lookahead = getchar();
+        int val = number();
+        printf("Parsed number: %d\n", val);
+        return 0;
+    }
+
     /* ************************* CODE GENERATION **************************** */
 
     return COMPILATION_COMPLETE;
