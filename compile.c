@@ -554,13 +554,11 @@ void logical_or()
     printf("LOGICAL_AND->[");
     logical_and();
     printf("]");
-    printf("LOGICAL_AND->[");
     while (current_token == OPERATOR && strcmp(tokens[pos].value, "|") == 0)
     {
         next_token();
         logical_and();
     }
-    printf("]");
 }
 
 void logical_and()
