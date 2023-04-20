@@ -56,6 +56,7 @@ struct Tkn
 struct Tkn tokens[1000]; // Maximum 1000 tokens
 int num_tokens = 0;
 int pos = 0;
+char *tkn_type;
 
 enum Token get_token(FILE *fp, char *buffer)
 {
@@ -68,7 +69,7 @@ enum Token get_token(FILE *fp, char *buffer)
         {
             if (c == '\n')
             {
-                return NEWLINE;
+                continue;
             }
             continue;
         }
@@ -129,7 +130,7 @@ enum Token get_token(FILE *fp, char *buffer)
                 exit(EXIT_FAILURE);
             }
             buffer[buffer_len++] = c;
-            // buffer[buffer_len] = '\0';
+            buffer[buffer_len] = '\0';
             return STRING;
         }
         // TOKEN OPERATOR
@@ -180,10 +181,10 @@ enum Token get_token(FILE *fp, char *buffer)
             buffer[buffer_len] = '\0';
             return SYMBOL;
         }
-        // else if (c == EOF)
-        // {
-        //     return ENDOFFILE;
-        // }
+        else if (c == EOF)
+        {
+            return ENDOFFILE;
+        }
 
         // UNRECOGNIZED TOKEN
         else
@@ -201,7 +202,7 @@ int main()
     clock_t start, end;
     double cpu_time_used;
     start = clock(); // -- Start the scanner timer
-    puts("\n-----------------------------------\nStarting lexical analysis.....\n");
+    puts("\n**************************************\nStarting lexical analysis.....\n");
 
     fp = fopen("program.c", "r");
     if (fp == NULL)
@@ -258,25 +259,26 @@ int main()
     end = clock(); // -- Stop the timer
     cpu_time_used = ((double)(end - start)) / CLOCKS_PER_SEC;
     putchar('\n');
-    puts("-----------------------------------\nLexical analysis complete✅ !");
+    puts("\nLexical analysis complete✅ !");
     printf("Scanner execution time: %f seconds\n\n", cpu_time_used);
 
     // ************************************************ PARSING **********************************************
-    // clock_t start_parser, end_parser;
-    // double parser_cpu_time_used;
-    // start_parser = clock(); // -- Start the parser timer
+    clock_t start_parser, end_parser;
+    double parser_cpu_time_used;
+    start_parser = clock(); // -- Start the parser timer
 
-    // puts("\n-----------------------------------\nStarting syntax analysis.....\n");
+    puts("\n**************************************\nStarting syntax analysis.....\n");
     current_token = tokens[pos].token_type;
+
+    printf("PROGRAM->[");
     program();
+    printf("]");
 
-    printf("Parsing successful");
-
-    // end_parser = clock(); // -- Stop the parser timer
-    // parser_cpu_time_used = ((double)(end_parser - start_parser)) / CLOCKS_PER_SEC;
-    // putchar('\n');
-    // puts("-----------------------------------\nSyntax analysis complete✅ !");
-    // printf("Parser execution time: %f seconds\n\n", parser_cpu_time_used);
+    end_parser = clock(); // -- Stop the parser timer
+    parser_cpu_time_used = ((double)(end_parser - start_parser)) / CLOCKS_PER_SEC;
+    putchar('\n');
+    puts("\nParsing successful✅ !");
+    printf("Parser execution time: %f seconds\n\n", parser_cpu_time_used);
 
     return 0;
 }
@@ -286,49 +288,105 @@ enum Token next_token()
 {
     pos++;
     current_token = tokens[pos].token_type;
+
+    switch (current_token)
+    {
+    case IDENTIFIER:
+        tkn_type = "identifier";
+        break;
+    case KEYWORD:
+        tkn_type = "keyword";
+        break;
+    case OPERATOR:
+        tkn_type = "operator";
+        break;
+    case NUMBER:
+        tkn_type = "number";
+        break;
+    case STRING:
+        tkn_type = "string";
+        break;
+    case COMMENT:
+        tkn_type = "comment";
+        break;
+    case NEWLINE:
+        tkn_type = "newline";
+        break;
+    case SYMBOL:
+        tkn_type = "symbol";
+        break;
+
+    default:
+        break;
+    }
+
     return current_token;
 }
 
 void program()
 {
+    printf("STATEMENT->[");
     while (current_token != EOF)
     {
         statement();
     }
+    printf("]");
 }
 
 void statement()
 {
+
+    // printf("         \n\t|\n\t|\n\t|--->");
+    // printf("         \n\t|\n\t|\n\t|--->");
     if (current_token == KEYWORD && strcmp(tokens[pos].value, "int") == 0)
     {
+        printf("VARIABLE_DECLARATION->[");
         variable_declaration();
+        printf("]");
     }
     else if (current_token == KEYWORD && strcmp(tokens[pos].value, "void") == 0)
     {
+        printf("VARIABLE_DECLARATION->[");
         function_declaration();
+        printf("]");
     }
     else
     {
+        printf("EXPRESSION_STATEMENT->[");
         expression_statement();
+        printf("]");
     }
 }
 
 void variable_declaration()
 {
+
     next_token();
+    printf("TOKEN %s->[%s", tkn_type, tokens[pos].value);
+    printf("]");
+
+    printf("IDENTIFIER->[");
     identifier();
+    printf("]");
     if (current_token == SYMBOL && strcmp(tokens[pos].value, "=") == 0)
     {
+        printf("ASSIGNMENT->[");
         assignment();
+        printf("]");
     }
+    printf("IDENTIFIER->[");
     while (current_token == SYMBOL && strcmp(tokens[pos].value, ",") == 0)
     {
         identifier();
         if (current_token == SYMBOL && strcmp(tokens[pos].value, "=") == 0)
         {
+
+            printf("ASSIGNMENT->[");
             assignment();
+            printf("]");
         }
     }
+    printf("%s]", tokens[pos].value);
     if (current_token != SYMBOL || strcmp(tokens[pos].value, ";") == 1)
     {
         printf("Expected semicolon at the end of variable declaration ❌\n");
@@ -336,39 +394,40 @@ void variable_declaration()
     }
     // Consume semicolon
     next_token();
+    printf("TOKEN %s->[%s", tkn_type, tokens[pos].value);
+    printf("]");
 }
 
 void function_declaration()
 {
+
     // Parse the function header
     if (current_token != KEYWORD || strcmp(tokens[pos].value, "void") != 0)
     {
         printf("Expected 'void' keyword for function declaration ❌\n");
         exit(EXIT_FAILURE);
     }
-
     next_token();
+    printf("TOKEN %s->[%s", tkn_type, tokens[pos].value);
+    printf("]");
+
     if (current_token != IDENTIFIER)
     {
         printf("Expected identifier after 'void' keyword for function declaration ❌\n");
         exit(EXIT_FAILURE);
     }
     next_token();
+    printf("TOKEN %s->[%s", tkn_type, tokens[pos].value);
+    printf("]");
+
     if (current_token != SYMBOL || strcmp(tokens[pos].value, "(") != 0)
     {
         printf("Expected '(' after function name for function declaration ❌\n");
         exit(EXIT_FAILURE);
     }
     next_token();
-    if (current_token != SYMBOL || strcmp(tokens[pos].value, ")") != 0)
-    {
-        // Parse the function parameters
-        while ((current_token = tokens[pos].token_type) == KEYWORD || current_token == IDENTIFIER)
-        {
-            // TODO: handle function parameters
-            // next_token();
-        }
-    }
+    printf("TOKEN %s->[%s", tkn_type, tokens[pos].value);
+    printf("]");
 
     if (current_token != SYMBOL || strcmp(tokens[pos].value, ")") != 0)
     {
@@ -376,16 +435,20 @@ void function_declaration()
         exit(EXIT_FAILURE);
     }
     next_token();
+    printf("TOKEN %s->[%s", tkn_type, tokens[pos].value);
+    printf("]");
     // Parse the function body
     block();
 }
 
 void expression_statement()
 {
+    printf("EXPRESSION->[");
     expression();
-    if (current_token != NEWLINE && current_token != ENDOFFILE)
+    printf("]");
+    if (current_token != NEWLINE && current_token != EOF)
     {
-        printf("Syntax error ❌: expected newline or end of file, found %s\n", buffer);
+        printf("Syntax error ❌: expected newline or end of file, found %s\n", tokens[pos].value);
         exit(EXIT_FAILURE);
     }
 }
@@ -397,10 +460,12 @@ void block()
         printf("Syntax error ❌: expected '{', found %s\n", tokens[pos].value);
         exit(EXIT_FAILURE);
     }
+    printf("STATEMENT->[");
     while ((current_token = next_token()) != SYMBOL || strcmp(tokens[pos].value, "}") != 0)
     {
         statement();
     }
+    printf("]");
 }
 
 void if_statement()
@@ -410,11 +475,18 @@ void if_statement()
         printf("Syntax error ❌: expected 'if', found %s\n", buffer);
         exit(EXIT_FAILURE);
     }
+    printf("EXPRESSION->[");
     expression();
+    printf("]");
+
+    printf("BLOCK->[");
     block();
+    printf("]");
     if ((current_token = next_token()) == KEYWORD && strcmp(tokens[pos].value, "else") == 0)
     {
+        printf("BLOCK->[");
         block();
+        printf("]");
     }
     else
     {
@@ -431,8 +503,13 @@ void while_statement()
         printf("Syntax error ❌: expected 'while', found %s\n", tokens[pos].value);
         exit(EXIT_FAILURE);
     }
+    printf("EXPRESSION->[");
     expression();
+    printf("]");
+
+    printf("BLOCK->[");
     block();
+    printf("]");
 }
 
 void return_statement()
@@ -442,7 +519,9 @@ void return_statement()
         printf("Syntax error ❌: expected 'return', found %s\n", tokens[pos].value);
         exit(EXIT_FAILURE);
     }
+    printf("EXPRESSION->[");
     expression();
+    printf("]");
     if (current_token != NEWLINE && current_token != EOF)
     {
         printf("Syntax error ❌: expected newline or end of file, found %s\n", tokens[pos].value);
@@ -452,13 +531,17 @@ void return_statement()
 
 void expression()
 {
+    printf("LOGICAL_OR>[");
     logical_or();
+    printf("]");
 }
 
 void assignment()
 {
+    printf("IDENTIFIER->[");
     identifier();
-    if (current_token != OPERATOR || strcmp(tokens[pos].value,"=") != 0)
+    printf("]");
+    if (current_token != OPERATOR || strcmp(tokens[pos].value, "=") != 0)
     {
         printf("Syntax error ❌: expected '=', found %s\n", tokens[pos].value);
         exit(EXIT_FAILURE);
@@ -468,60 +551,86 @@ void assignment()
 
 void logical_or()
 {
+    printf("LOGICAL_AND->[");
     logical_and();
+    printf("]");
+    printf("LOGICAL_AND->[");
     while (current_token == OPERATOR && strcmp(tokens[pos].value, "|") == 0)
     {
         next_token();
         logical_and();
     }
+    printf("]");
 }
 
 void logical_and()
 {
-    equality();
+    
+    logical_and();
     while (current_token == OPERATOR && strcmp(tokens[pos].value, "&") == 0)
     {
         next_token();
-        equality();
+
+        logical_and();
     }
+    printf("]");
 }
 
 void equality()
 {
+    printf("COMAPRISON->[");
     comparison();
+    printf("]");
+    printf("COMPARISON->[");
     while (current_token == OPERATOR && (strcmp(tokens[pos].value, "=") == 0 || strcmp(tokens[pos].value, "!") == 0))
     {
         next_token();
+
         comparison();
     }
+    printf("]");
 }
 
 void comparison()
 {
+    printf("TERM->[");
     term();
+    printf("]");
+    printf("TERM->[");
     while (current_token == OPERATOR && (strcmp(tokens[pos].value, "<") == 0 || strcmp(tokens[pos].value, ">") == 0 ||
                                          strcmp(tokens[pos].value, "<=") == 0 || strcmp(tokens[pos].value, ">=") == 0))
     {
         next_token();
-        term();
+        printf("TOKEN %s->[%s", tkn_type, tokens[pos].value);
+        printf("]");
+
+                term();
     }
+    printf("]");
 }
 
 // Parse a term, which is a product or division of factors.
 void term()
 {
     // Parse the first factor in the term
+    printf("FACTOR->[");
     factor();
+    printf("]");
 
     // Keep parsing factors while we have multiplication or division operators
+    printf("FACTOR->[");
     while (current_token == OPERATOR && (strcmp(tokens[pos].value, "*") == 0 || strcmp(tokens[pos].value, "/") == 0))
     {
         // Save the current operator and get the next token
         enum Token operator_token = current_token;
         next_token();
+        printf("TOKEN %s->[%s", tkn_type, tokens[pos].value);
+        printf("]");
 
         // Parse the next factor in the term
+        
         factor();
+       
 
         // Generate code for the multiplication or division operation
         if (operator_token == OPERATOR && strcmp(tokens[pos].value, "*") == 0)
@@ -533,6 +642,7 @@ void term()
             printf("DIV\n");
         }
     }
+     printf("]");
 }
 
 // Parse a factor, which is a number, variable, or parenthesized expression.
@@ -543,10 +653,14 @@ void factor()
     {
         // Save the current operator and get the next token
         enum Token operator_token = current_token;
-        next_token();
 
+        next_token();
+        printf("TOKEN %s->[%s", tkn_type, tokens[pos].value);
+        printf("]");
         // Parse the next factor
+        printf("FACTOR->[");
         factor();
+        printf("]");
 
         // Generate code for the unary operation
         if (operator_token == OPERATOR && strcmp(tokens[pos].value, "+") == 0)
@@ -563,6 +677,8 @@ void factor()
     {
         // Parse the expression inside the parentheses
         next_token();
+        printf("TOKEN %s->[%s", tkn_type, tokens[pos].value);
+        printf("]");
         expression();
         if (current_token != SYMBOL || strcmp(tokens[pos].value, ")") != 0)
         {
@@ -570,11 +686,15 @@ void factor()
             exit(EXIT_FAILURE);
         }
         next_token();
+        printf("TOKEN %s->[%s", tkn_type, tokens[pos].value);
+        printf("]");
     }
     // Otherwise, it must be a number or variable
     else
     {
+        printf("PRIMARY->[");
         primary();
+        printf("]");
     }
 }
 
@@ -604,7 +724,9 @@ void unary()
     // Otherwise, it must be a primary (number or variable)
     else
     {
+        printf("PRIMARY->[");
         primary();
+        printf("]");
     }
 }
 
@@ -612,19 +734,27 @@ void primary()
 {
     if (current_token == IDENTIFIER)
     {
+        printf("IDENTIFIER->[");
         identifier();
+        printf("]");
     }
     else if (current_token == NUMBER)
     {
+        printf("NUMBER->[");
         number();
+        printf("]");
     }
     else if (current_token == STRING)
     {
+        printf("STRING->[");
         string();
+        printf("]");
     }
     else if (current_token == SYMBOL && strcmp(tokens[pos].value, "(") == 0)
     {
         next_token();
+        printf("TOKEN %s->[%s", tkn_type, tokens[pos].value);
+        printf("]");
         expression();
         if (current_token != SYMBOL || strcmp(tokens[pos].value, ")") != 0)
         {
@@ -632,6 +762,14 @@ void primary()
             exit(EXIT_FAILURE);
         }
         next_token();
+        printf("TOKEN %s->[%s", tkn_type, tokens[pos].value);
+        printf("]");
+    }
+    else if (current_token == SYMBOL && strcmp(tokens[pos].value, "}") == 0)
+    {
+        next_token();
+        printf("TOKEN %s->[%s", tkn_type, tokens[pos].value);
+        printf("]");
     }
     else
     {
@@ -645,6 +783,8 @@ void identifier()
     if (current_token == IDENTIFIER)
     {
         next_token();
+        printf("TOKEN %s->[%s", tkn_type, tokens[pos].value);
+        printf("]");
     }
     else
     {
@@ -658,6 +798,8 @@ void number()
     if (current_token == NUMBER)
     {
         next_token();
+        printf("TOKEN %s->[%s", tkn_type, tokens[pos].value);
+        printf("]");
     }
     else
     {
@@ -671,6 +813,8 @@ void string()
     if (current_token == STRING)
     {
         next_token();
+        printf("TOKEN %s->[%s", tkn_type, tokens[pos].value);
+        printf("]");
     }
     else
     {
