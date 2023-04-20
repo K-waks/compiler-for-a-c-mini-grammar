@@ -8,6 +8,8 @@ sample/program
 
 ~roughwork
 
+parser*
+
 compiler
 compile
 
