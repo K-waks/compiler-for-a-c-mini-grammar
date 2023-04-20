@@ -4,14 +4,14 @@
 
 ~old_grp11Ccompiler/compiler/build/helpers/*.o
 
-sample/program
+
 
 ~roughwork
 
 parser*
 
-compiler
-compile
+old/compiler
+old/compile
 
 test*
 
@@ -19,5 +19,5 @@ test*
 
 compiler.h
 
-scanner*
+new
 
