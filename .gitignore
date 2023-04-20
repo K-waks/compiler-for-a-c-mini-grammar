@@ -4,9 +4,11 @@
 
 ~old_grp11Ccompiler/compiler/build/helpers/*.o
 
-
+sample_program
 
 ~roughwork
+
+scanner
 
 parser*
 

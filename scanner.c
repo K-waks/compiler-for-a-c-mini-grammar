@@ -20,8 +20,14 @@ void program();
 void statement();
 void variable_declaration();
 void function_declaration();
+void if_statement();
+void assignment();
+void expression();
 void identifier();
 void block();
+void string();
+void number();
+void primary();
 
 // file descriptor variable declared and buffer of dynamic size to hold the read characters
 FILE *fp;
@@ -31,7 +37,13 @@ char buffer[BUFSIZ];
 struct Token
 {
     enum Token_Type type;
-    char value[256];
+    union
+    {
+        char value[256];
+        int inum;
+        float fnum;
+    };
+    // char value[256];
 };
 
 // array of data type struct Token that stores a max of 1000 tokens (struct Token instances)
@@ -212,7 +224,7 @@ int main()
     puts("\nScanning successful✅ !");
 
     // **************************************** PARSING *********************************************
-    printf("\n%d   %s   %d\n\n", tokens[pos].type, tokens[pos].value, pos);
+    // printf("\n%d   %s   %d\n\n", tokens[pos].type, tokens[pos].value, pos);
     program();
     if (tokens[pos].type == EOF)
     {
@@ -233,7 +245,7 @@ int main()
 enum Token_Type next_token()
 {
     pos++;
-    printf("\n%d   %s   %d\n\n", tokens[pos].type, tokens[pos].value, pos);
+    // printf("\n%d   %s   %d\n\n", tokens[pos].type, tokens[pos].value, pos);
     return tokens[pos].type;
 }
 
@@ -258,6 +270,10 @@ void statement()
         {
             function_declaration();
         }
+        else if (strcmp(tokens[pos].value, "if") == 0)
+        {
+            if_statement();
+        }
 
         break;
     case IDENTIFIER:
@@ -267,27 +283,19 @@ void statement()
 
 void variable_declaration()
 {
-    next_token();
+    next_token(); // consume 'int' and go the next token
     identifier();
+    if (tokens[pos].type == OPERATOR && strcmp(tokens[pos].value, "=") == 0)
+    {
+        assignment();     
+    }
+
     if (tokens[pos].type != SYMBOL || strcmp(tokens[pos].value, ";") == 1)
     {
         printf("\n\n❌ ERROR! Expected ';' at the end of variable declaration\n\n");
         exit(EXIT_FAILURE);
     }
     next_token(); // consume ';' and go the next token
-}
-
-void identifier()
-{
-    if (tokens[pos].type == IDENTIFIER)
-    {
-        next_token();
-    }
-    else
-    {
-        printf("\n\n❌ ERROR! Expected identifier, but got %s.\n\n", tokens[pos].value);
-        exit(EXIT_FAILURE);
-    }
 }
 
 void function_declaration()
@@ -316,10 +324,98 @@ void block()
         printf("\n\nSyntax error ❌: expected '{', found %s\n", tokens[pos].value);
         exit(EXIT_FAILURE);
     }
-    while (!(tokens[pos].type == SYMBOL && strcmp(tokens[pos].value, "}") == 0))
+    next_token(); // consume '{' and go the next token
+    while (tokens[pos].type != SYMBOL || strcmp(tokens[pos].value, "}") == 1)
     {
-        next_token();
         statement();
     }
-    // next_token();
+    // TODO: Implement error handling: Error ❌: Expected '}' to close the block
+    next_token();
+}
+
+void if_statement()
+{
+    next_token(); // consume 'int' and go the next token
+    if (tokens[pos].type != SYMBOL || strcmp(tokens[pos].value, "(") != 0)
+    {
+        printf("\n\nSyntax error ❌: expected '(', found %s\n", tokens[pos].value);
+        exit(EXIT_FAILURE);
+    }
+    next_token(); // consume '(' and go the next token
+
+    if (tokens[pos].type != IDENTIFIER || tokens[pos].type != NUMBER || tokens[pos].type != STRING)
+    {
+        printf("\n\nSyntax error ❌: expected an id, num or str, found %s\n", tokens[pos].value);
+        exit(EXIT_FAILURE);
+    }
+    next_token(); // consume '{' and go the next token
+    while (tokens[pos].type != SYMBOL || strcmp(tokens[pos].value, ")") == 1)
+    {
+        expression();
+    }
+}
+
+void expression()
+{
+}
+
+void assignment()
+{
+    next_token(); // consume '=' and go to the next token
+    primary();
+}
+
+void primary()
+{
+    if (tokens[pos].type == IDENTIFIER)
+    {
+        identifier();
+    }
+    else if (tokens[pos].type == NUMBER)
+    {
+        number();
+    }
+    else if (tokens[pos].type == STRING)
+    {
+        string();
+    }
+}
+
+void identifier()
+{
+    if (tokens[pos].type == IDENTIFIER)
+    {
+        next_token(); // consume the identifier and go the next token
+    }
+    else
+    {
+        printf("\n\n❌ ERROR! Expected identifier, but got %s.\n\n", tokens[pos].value);
+        exit(EXIT_FAILURE);
+    }
+}
+
+void number()
+{
+    if (tokens[pos].type == NUMBER)
+    {
+        next_token();
+    }
+    else
+    {
+        printf("\n\n❌ ERROR! Expected number, but got %s.\n\n", tokens[pos].value);
+        exit(EXIT_FAILURE);
+    }
+}
+
+void string()
+{
+    if (tokens[pos].type == STRING)
+    {
+        next_token();
+    }
+    else
+    {
+        printf("\n\n❌ ERROR! Expected string, but got %s.\n\n", tokens[pos].value);
+        exit(EXIT_FAILURE);
+    }
 }
