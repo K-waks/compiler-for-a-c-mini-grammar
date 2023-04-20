@@ -785,7 +785,7 @@ void identifier()
     }
     else
     {   
-        fprintf(stderr, "\n\n\nError: Expected identifier, but got '%s of %d'.\n", tokens[pos].value,);
+        fprintf(stderr, "\n\n\nError: Expected identifier, but got '%s'.\n", tokens[pos].value);
         exit(EXIT_FAILURE);
     }
 }
