@@ -83,7 +83,7 @@ enum Token get_token(FILE *fp, char *buffer)
             }
             ungetc(c, fp);
             buffer[buffer_len] = '\0';
-           if (strcmp(buffer, "int") == 0 || strcmp(buffer, "return") == 0 || strcmp(buffer, "void") == 0 || strcmp(buffer, "char") == 0 || strcmp(buffer, "if") == 0 || strcmp(buffer, "else") == 0 || strcmp(buffer, "while") == 0 || strcmp(buffer, "break") == 0 || strcmp(buffer, "for") == 0)
+            if (strcmp(buffer, "int") == 0 || strcmp(buffer, "return") == 0 || strcmp(buffer, "void") == 0 || strcmp(buffer, "char") == 0)
             {
                 return KEYWORD;
             }
