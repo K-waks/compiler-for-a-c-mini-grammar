@@ -1,25 +1,23 @@
-int main()
+int sum(int n)
 {
-    int x;
-    int y;
-
-    x = 0;
-    y = 5;
-
-    if (y > x)
+    if (n <= 1)
     {
-        printf("y is greater than x\n\n");
+        return (1);
     }
     else
     {
-        printf("x is greater than y\n\n");
+        return 0;
     }
-
-    while (x < y)
-    {
-        printf("This will loop five times\n");
-        x = x + 1;
-    }
-
-    return 0;
 }
+
+
+int main()
+{
+    int n;
+    printf("Enter an integer: ");
+    scanf("%d", &n);
+    printf("Sum of numbers from 0 till %d is %d.", n);
+    return (0);
+}
+
+// if (232 a3 >= "ast" || 23.5 <= 90.s3) do {a2 = 89}

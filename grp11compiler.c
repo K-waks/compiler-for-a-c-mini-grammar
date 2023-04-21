@@ -342,7 +342,20 @@ void function_declaration()
         printf("\n\n❌ ERROR! Expected '(' after function name for function declaration\n\n");
         exit(EXIT_FAILURE);
     }
-    next_token("function declaration 2"); // consume '(' and go the next token
+    next_token("function declaration 1"); // consume '(' and go the next token
+
+    if (tokens[pos].type != SYMBOL || strcmp(tokens[pos].value, ")") == 1)
+    {
+        if (tokens[pos].type == KEYWORD && strcmp(tokens[pos].value, "void") == 0)
+        {
+            next_token("function declaration 2");
+        }
+        else if ((tokens[pos].type == KEYWORD && strcmp(tokens[pos].value, "int") == 0) || (tokens[pos].type == KEYWORD && strcmp(tokens[pos].value, "char") == 0) || (tokens[pos].type == KEYWORD && strcmp(tokens[pos].value, "float") == 0))
+        {
+            next_token("function declaration 3");
+            identifier();
+        }
+    }
     if (tokens[pos].type != SYMBOL || strcmp(tokens[pos].value, ")") == 1)
     {
         printf("\n\n❌ ERROR! Expected ')' after function name for function declaration\n\n");
@@ -474,8 +487,8 @@ void while_statement()
 
 void return_statement()
 {
-    next_token("return_statement"); // consume 'return'
-    if (strcmp(tokens[pos].value, "(") == 0)  // return with brackets i.e return (0);
+    next_token("return_statement");          // consume 'return'
+    if (strcmp(tokens[pos].value, "(") == 0) // return with brackets i.e return (0);
     {
         expression();
         if (tokens[pos].type == SYMBOL && strcmp(tokens[pos].value, ")") == 0)
@@ -510,7 +523,6 @@ void return_statement()
             exit(EXIT_FAILURE);
         }
     }
-    
 }
 
 // ************************ how expressions are built by just calling expression() once ***************
@@ -631,8 +643,6 @@ void primary()
         next_token("primary 1"); // consume '(' and go the next token
         expression();
 
-
-        
         if (tokens[pos].type == SYMBOL && strcmp(tokens[pos].value, ",") == 0)
         {
             next_token("primary");
