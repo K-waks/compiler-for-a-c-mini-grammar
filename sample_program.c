@@ -1,20 +1,23 @@
 void main()
 {
-    int x = 4;
-    int y = 6;
-    int x = 5;
-    int z;
+    int x;
+    int y;
 
-    if (y <= x)
+    x = 0;
+    y = 5;
+
+    if (y > x)
     {
-       
+        printf("y is greater than x\n\n");
     }
     else
     {
+        printf("x is greater than y\n\n");
     }
 
-    while ( y <= x )
+    while (x < y)
     {
+        printf("This will loop five times\n");
+        x = x + 1;
     }
-    
 }

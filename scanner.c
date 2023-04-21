@@ -293,8 +293,10 @@ void statement()
         }
         break;
     case IDENTIFIER:
-    case NUMBER:
+        identifier();
         expression_statement();
+        break;
+    case NUMBER:
         break;
     default:
         printf("\n\n❌ ERROR! Unrecognized syntax\n\n");
@@ -307,11 +309,6 @@ void variable_declaration()
 {
     next_token("variable declaration 1"); // consume 'int' and go the next token
     identifier();
-    if (tokens[pos].type == OPERATOR && strcmp(tokens[pos].value, "=") == 0)
-    {
-        assignment();
-    }
-
     if (tokens[pos].type != SYMBOL || strcmp(tokens[pos].value, ";") == 1)
     {
         printf("\n\n❌ ERROR! Expected ';' at the end of variable declaration\n\n");
@@ -341,15 +338,42 @@ void function_declaration()
 
 void expression_statement()
 {
-    expression();
-    if (tokens[pos].type == SYMBOL && strcmp(tokens[pos].value, ";") == 0)
+    if (tokens[pos].type == OPERATOR && strcmp(tokens[pos].value, "=") == 0)
     {
-        next_token("expression_statement() 1"); // consume ';' and go the next token
+        next_token("expression_statement() 1");
+        expression();
+        if (tokens[pos].type == SYMBOL && strcmp(tokens[pos].value, ";") == 0)
+        {
+            next_token("expression_statement() 1"); // consume ';' and go the next token
+        }
+        else
+        {
+            printf("\n\n❌ ERROR! Expecting a ';'.\n\n");
+            exit(EXIT_FAILURE);
+        }
     }
-    else
+    else if (tokens[pos].type == SYMBOL && strcmp(tokens[pos].value, "(") == 0)
     {
-        printf("\n\n❌ ERROR! Expecting a ';'.\n\n");
-        exit(EXIT_FAILURE);
+        expression();
+        
+        if (tokens[pos].type == SYMBOL && strcmp(tokens[pos].value, ")") == 0)
+        {
+            next_token("if statement 2"); // consume ')' and go the next token
+        }
+        else
+        {
+            printf("\n\n❌ ERROR! Closing parenthesis expected.\n\n");
+            exit(EXIT_FAILURE);
+        }
+        if (tokens[pos].type == SYMBOL && strcmp(tokens[pos].value, ";") == 0)
+        {
+            next_token("expression_statement() 1"); // consume ';' and go the next token
+        }
+        else
+        {
+            printf("\n\n❌ ERROR! Expecting a ';'.\n\n");
+            exit(EXIT_FAILURE);
+        }
     }
 }
 
@@ -432,12 +456,6 @@ void while_statement()
     block();
 }
 
-void assignment()
-{
-    next_token("assignment 1"); // consume '=' and go to the next token
-    primary();
-}
-
 // **************************************************************************************
 
 // function to parse an expression
@@ -482,11 +500,22 @@ void equality()
 // comparison operator
 void comparison()
 {
-    term();
+    assignment();
     while (tokens[pos].type == OPERATOR && (strcmp(tokens[pos].value, ">") == 0 || strcmp(tokens[pos].value, "<") == 0 ||
                                             strcmp(tokens[pos].value, ">=") == 0 || strcmp(tokens[pos].value, "<=") == 0))
     {
         next_token("comparison");
+        assignment();
+    }
+}
+
+// assignment operation
+void assignment()
+{
+    term();
+    while (tokens[pos].type == OPERATOR && (strcmp(tokens[pos].value, "=") == 0))
+    {
+        next_token("assignment"); // consume '=' and go to the next token
         term();
     }
 }
