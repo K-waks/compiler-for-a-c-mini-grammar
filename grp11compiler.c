@@ -18,6 +18,7 @@ enum Token_Type
 enum Token_Type next_token(char *location);
 void program();
 void statement();
+void declaration();
 void variable_declaration();
 void function_declaration();
 void expression_statement();
@@ -277,11 +278,15 @@ void statement()
     case KEYWORD:
         if (strcmp(tokens[pos].value, "int") == 0)
         {
-            variable_declaration();
+            declaration();
         }
-        else if (strcmp(tokens[pos].value, "void") == 0)
+        if (strcmp(tokens[pos].value, "void") == 0)
         {
-            function_declaration();
+            declaration();
+        }
+        if (strcmp(tokens[pos].value, "char") == 0)
+        {
+            declaration();
         }
         else if (strcmp(tokens[pos].value, "if") == 0)
         {
@@ -296,8 +301,6 @@ void statement()
         identifier();
         expression_statement();
         break;
-    case NUMBER:
-        break;
     default:
         printf("\n\n❌ ERROR! Unrecognized syntax\n\n");
         exit(EXIT_FAILURE);
@@ -305,10 +308,21 @@ void statement()
     }
 }
 
+void declaration()
+{
+    next_token("declaration"); // consume 'int' and go the next token
+    identifier();
+    if (strcmp(tokens[pos].value, ";") == 0)
+    {
+        variable_declaration();
+    }
+    else if (strcmp(tokens[pos].value, "(") == 0)
+    {
+        function_declaration();
+    }
+}
 void variable_declaration()
 {
-    next_token("variable declaration 1"); // consume 'int' and go the next token
-    identifier();
     if (tokens[pos].type != SYMBOL || strcmp(tokens[pos].value, ";") == 1)
     {
         printf("\n\n❌ ERROR! Expected ';' at the end of variable declaration\n\n");
@@ -319,8 +333,6 @@ void variable_declaration()
 
 void function_declaration()
 {
-    next_token("function declaration 1"); // consume 'void' and go the next token
-    identifier();
     if (tokens[pos].type != SYMBOL || strcmp(tokens[pos].value, "(") == 1)
     {
         printf("\n\n❌ ERROR! Expected '(' after function name for function declaration\n\n");
