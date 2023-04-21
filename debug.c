@@ -16,7 +16,7 @@ enum Token_Type
 };
 
 // function prototypes for the parser
-enum Token_Type next_token();
+enum Token_Type next_token(char *location);
 void parser();
 void statement();
 void declaration();
@@ -232,7 +232,7 @@ int main()
             printf("STRING: %s\n", tokens[i].value);
             break;
         case EOF:
-            // printf("Parser terminator symbol: %s\n", tokens[i].value);
+            printf("Parser terminator symbol: %s\n", tokens[i].value);
             break;
         default:
             puts("Unknown token\n");
@@ -255,8 +255,9 @@ int main()
     start_parser = clock();
 
     //    entry point for the parser functions
+    printf("\n%d.)   %s of type %d  in main. (start token) \n\n", pos, tokens[pos].value, tokens[pos].type);
     parser();
-    if (tokens[pos].type == EOF)
+   if (tokens[pos].type == EOF)
     {
         // stop scanner timer
         end_parser = clock(); // -- Stop the timer
@@ -275,9 +276,13 @@ int main()
 }
 
 // Parser functions
-enum Token_Type next_token()
+enum Token_Type next_token(char *location)
 {
     pos++;
+
+    // The location variable is just debugging purposes to show where exactly a token is being read from.
+    printf("\n%d.)   %s of type %d  called in  %s\n\n", pos, tokens[pos].value, tokens[pos].type, location);
+
     return tokens[pos].type;
 }
 
@@ -332,7 +337,7 @@ void statement()
 
 void declaration()
 {
-    next_token(); // consume 'int' and go the next token
+    next_token("declaration"); // consume 'int' and go the next token
     identifier();
     if (strcmp(tokens[pos].value, ";") == 0)
     {
@@ -350,7 +355,7 @@ void variable_declaration()
         printf("\n\n❌ ERROR! Expected ';' at the end of variable declaration\n\n");
         exit(EXIT_FAILURE);
     }
-    next_token(); // consume ';' and go the next token
+    next_token("variable declaration 2"); // consume ';' and go the next token
 }
 
 void function_declaration()
@@ -360,17 +365,17 @@ void function_declaration()
         printf("\n\n❌ ERROR! Expected '(' after function name for function declaration\n\n");
         exit(EXIT_FAILURE);
     }
-    next_token(); // consume '(' and go the next token
+    next_token("function declaration 1"); // consume '(' and go the next token
 
     if (tokens[pos].type != SYMBOL || strcmp(tokens[pos].value, ")") == 1)
     {
         if (tokens[pos].type == KEYWORD && strcmp(tokens[pos].value, "void") == 0)
         {
-            next_token();
+            next_token("function declaration 2");
         }
         else if ((tokens[pos].type == KEYWORD && strcmp(tokens[pos].value, "int") == 0) || (tokens[pos].type == KEYWORD && strcmp(tokens[pos].value, "char") == 0) || (tokens[pos].type == KEYWORD && strcmp(tokens[pos].value, "float") == 0))
         {
-            next_token();
+            next_token("function declaration 3");
             identifier();
         }
     }
@@ -379,7 +384,7 @@ void function_declaration()
         printf("\n\n❌ ERROR! Expected ')' after function name for function declaration\n\n");
         exit(EXIT_FAILURE);
     }
-    next_token(); // consume ')' and go the next token
+    next_token("function declaration 3"); // consume ')' and go the next token
     block();
 }
 
@@ -387,11 +392,11 @@ void expression_statement()
 {
     if (tokens[pos].type == OPERATOR && strcmp(tokens[pos].value, "=") == 0)
     {
-        next_token();
+        next_token("expression_statement() 1");
         expression();
         if (tokens[pos].type == SYMBOL && strcmp(tokens[pos].value, ";") == 0)
         {
-            next_token(); // consume ';' and go the next token
+            next_token("expression_statement() 1"); // consume ';' and go the next token
         }
         else
         {
@@ -405,7 +410,7 @@ void expression_statement()
 
         if (tokens[pos].type == SYMBOL && strcmp(tokens[pos].value, ")") == 0)
         {
-            next_token(); // consume ')' and go the next token
+            next_token("expression statement 4"); // consume ')' and go the next token
         }
         else
         {
@@ -414,7 +419,7 @@ void expression_statement()
         }
         if (tokens[pos].type == SYMBOL && strcmp(tokens[pos].value, ";") == 0)
         {
-            next_token(); // consume ';' and go the next token
+            next_token("expression_statement() 5"); // consume ';' and go the next token
         }
         else
         {
@@ -431,7 +436,7 @@ void block()
         printf("\n\nSyntax error ❌: expected '{', found %s\n", tokens[pos].value);
         exit(EXIT_FAILURE);
     }
-    next_token(); // consume '{' and go the next token
+    next_token("block 1"); // consume '{' and go the next token
     while (tokens[pos].type != SYMBOL || strcmp(tokens[pos].value, "}") == 1)
     {
         statement();
@@ -439,7 +444,7 @@ void block()
 
     if (tokens[pos].type && strcmp(tokens[pos].value, "}") == 0)
     {
-        next_token();
+        next_token("block 2");
     }
     else
     {
@@ -450,7 +455,7 @@ void block()
 
 void if_statement()
 {
-    next_token(); // consume 'if' and go the next token
+    next_token("if statement 1"); // consume 'if' and go the next token
     if (tokens[pos].type != SYMBOL || strcmp(tokens[pos].value, "(") != 0)
     {
         printf("\n\nSyntax error ❌: expected '(', found %s\n", tokens[pos].value);
@@ -461,7 +466,7 @@ void if_statement()
 
     if (tokens[pos].type == SYMBOL && strcmp(tokens[pos].value, ")") == 0)
     {
-        next_token(); // consume ')' and go the next token
+        next_token("if statement 2"); // consume ')' and go the next token
     }
     else
     {
@@ -472,7 +477,7 @@ void if_statement()
     block();
     if (tokens[pos].type == KEYWORD && strcmp(tokens[pos].value, "else") == 0)
     {
-        next_token(); // consume 'else' and go the next token
+        next_token("if statement 3"); // consume 'else' and go the next token
         block();
     }
 }
@@ -480,7 +485,7 @@ void if_statement()
 void while_statement()
 {
 
-    next_token(); // consume 'while' and go the next token
+    next_token("while statement 1"); // consume 'while' and go the next token
 
     if (tokens[pos].type != SYMBOL || strcmp(tokens[pos].value, "(") != 0)
     {
@@ -492,7 +497,7 @@ void while_statement()
 
     if (tokens[pos].type == SYMBOL && strcmp(tokens[pos].value, ")") == 0)
     {
-        next_token(); // consume ')' and go the next token
+        next_token("while statement 2"); // consume ')' and go the next token
     }
     else
     {
@@ -505,13 +510,13 @@ void while_statement()
 
 void return_statement()
 {
-    next_token();                            // consume 'return'
+    next_token("return_statement");          // consume 'return'
     if (strcmp(tokens[pos].value, "(") == 0) // return with brackets i.e return (0);
     {
         expression();
         if (tokens[pos].type == SYMBOL && strcmp(tokens[pos].value, ")") == 0)
         {
-            next_token(); // consume ')' and go the next token
+            next_token("expression statement 4"); // consume ')' and go the next token
         }
         else
         {
@@ -520,7 +525,7 @@ void return_statement()
         }
         if (tokens[pos].type == SYMBOL && strcmp(tokens[pos].value, ";") == 0)
         {
-            next_token(); // consume ';' and go the next token
+            next_token("expression_statement() 5"); // consume ';' and go the next token
         }
         else
         {
@@ -533,7 +538,7 @@ void return_statement()
         expression();
         if (tokens[pos].type == SYMBOL && strcmp(tokens[pos].value, ";") == 0)
         {
-            next_token(); // consume ';' and go the next token
+            next_token("expression_statement() 5"); // consume ';' and go the next token
         }
         else
         {
@@ -559,7 +564,7 @@ void logical_or()
     logical_and();
     while (tokens[pos].type == OPERATOR && strcmp(tokens[pos].value, "||") == 0)
     {
-        next_token();
+        next_token("logical_or");
         logical_and();
     }
 }
@@ -570,7 +575,7 @@ void logical_and()
     equality();
     while (tokens[pos].type == OPERATOR && strcmp(tokens[pos].value, "&&") == 0)
     {
-        next_token();
+        next_token("logical_and");
         equality();
     }
 }
@@ -581,7 +586,7 @@ void equality()
     comparison();
     while (tokens[pos].type == OPERATOR && (strcmp(tokens[pos].value, "==") == 0 || strcmp(tokens[pos].value, "!=") == 0))
     {
-        next_token();
+        next_token("equality");
         comparison();
     }
 }
@@ -593,7 +598,7 @@ void comparison()
     while (tokens[pos].type == OPERATOR && (strcmp(tokens[pos].value, ">") == 0 || strcmp(tokens[pos].value, "<") == 0 ||
                                             strcmp(tokens[pos].value, ">=") == 0 || strcmp(tokens[pos].value, "<=") == 0))
     {
-        next_token();
+        next_token("comparison");
         assignment();
     }
 }
@@ -604,7 +609,7 @@ void assignment()
     term();
     while (tokens[pos].type == OPERATOR && (strcmp(tokens[pos].value, "=") == 0))
     {
-        next_token(); // consume '=' and go to the next token
+        next_token("assignment"); // consume '=' and go to the next token
         term();
     }
 }
@@ -615,7 +620,7 @@ void term()
     factor();
     while (tokens[pos].type == OPERATOR && (strcmp(tokens[pos].value, "+") == 0 || strcmp(tokens[pos].value, "-") == 0))
     {
-        next_token(); // consume '+' or '-' and go the next token
+        next_token("term"); // consume '+' or '-' and go the next token
         factor();
     }
 }
@@ -626,7 +631,7 @@ void factor()
     unary();
     while (tokens[pos].type == OPERATOR && (strcmp(tokens[pos].value, "*") == 0 || strcmp(tokens[pos].value, "/") == 0 || strcmp(tokens[pos].value, "%") == 0))
     {
-        next_token();
+        next_token("factor");
         unary();
     }
 }
@@ -636,7 +641,7 @@ void unary()
 {
     if (tokens[pos].type == OPERATOR && (strcmp(tokens[pos].value, "-") == 0 || strcmp(tokens[pos].value, "!") == 0))
     {
-        next_token();
+        next_token("unary");
     }
     primary();
 }
@@ -658,12 +663,12 @@ void primary()
     }
     else if (tokens[pos].type == SYMBOL && strcmp(tokens[pos].value, "(") == 0)
     {
-        next_token(); // consume '(' and go the next token
+        next_token("primary 1"); // consume '(' and go the next token
         expression();
 
         if (tokens[pos].type == SYMBOL && strcmp(tokens[pos].value, ",") == 0)
         {
-            next_token();
+            next_token("primary");
 
             if (strcmp(tokens[pos].value, "\"") == 0 || tokens[pos].type == STRING)
             {
@@ -677,7 +682,7 @@ void primary()
 
             else if (strcmp(tokens[pos].value, "&") == 0 && tokens[pos + 1].type == IDENTIFIER)
             {
-                next_token(); // consume '&' and go the next token
+                next_token("primary"); // consume '&' and go the next token
                 expression();
             }
         }
@@ -694,7 +699,7 @@ void identifier()
 {
     if (tokens[pos].type == IDENTIFIER)
     {
-        next_token(); // consume the identifier and go the next token
+        next_token("identifier"); // consume the identifier and go the next token
     }
     else
     {
@@ -707,7 +712,7 @@ void number()
 {
     if (tokens[pos].type == NUMBER)
     {
-        next_token(); // consume num and go the next token
+        next_token("number"); // consume num and go the next token
     }
     else
     {
@@ -720,7 +725,7 @@ void string()
 {
     if (tokens[pos].type == STRING)
     {
-        next_token();
+        next_token("string");
     }
     else
     {
