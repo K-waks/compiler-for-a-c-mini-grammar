@@ -296,6 +296,10 @@ void statement()
         {
             while_statement();
         }
+        else if (strcmp(tokens[pos].value, "return") == 0)
+        {
+            return_statement();
+        }
         break;
     case IDENTIFIER:
         identifier();
@@ -367,10 +371,10 @@ void expression_statement()
     else if (tokens[pos].type == SYMBOL && strcmp(tokens[pos].value, "(") == 0)
     {
         expression();
-        
+
         if (tokens[pos].type == SYMBOL && strcmp(tokens[pos].value, ")") == 0)
         {
-            next_token("if statement 2"); // consume ')' and go the next token
+            next_token("expression statement 4"); // consume ')' and go the next token
         }
         else
         {
@@ -379,7 +383,7 @@ void expression_statement()
         }
         if (tokens[pos].type == SYMBOL && strcmp(tokens[pos].value, ";") == 0)
         {
-            next_token("expression_statement() 1"); // consume ';' and go the next token
+            next_token("expression_statement() 5"); // consume ';' and go the next token
         }
         else
         {
@@ -468,7 +472,50 @@ void while_statement()
     block();
 }
 
-// **************************************************************************************
+void return_statement()
+{
+    next_token("return_statement"); // consume 'return'
+    if (strcmp(tokens[pos].value, "(") == 0)  // return with brackets i.e return (0);
+    {
+        expression();
+        if (tokens[pos].type == SYMBOL && strcmp(tokens[pos].value, ")") == 0)
+        {
+            next_token("expression statement 4"); // consume ')' and go the next token
+        }
+        else
+        {
+            printf("\n\n❌ ERROR! Closing parenthesis expected.\n\n");
+            exit(EXIT_FAILURE);
+        }
+        if (tokens[pos].type == SYMBOL && strcmp(tokens[pos].value, ";") == 0)
+        {
+            next_token("expression_statement() 5"); // consume ';' and go the next token
+        }
+        else
+        {
+            printf("\n\n❌ ERROR! Expecting a ';'.\n\n");
+            exit(EXIT_FAILURE);
+        }
+    }
+    else // return without brackets i.e return 0;
+    {
+        expression();
+        if (tokens[pos].type == SYMBOL && strcmp(tokens[pos].value, ";") == 0)
+        {
+            next_token("expression_statement() 5"); // consume ';' and go the next token
+        }
+        else
+        {
+            printf("\n\n❌ ERROR! Expecting a ';'.\n\n");
+            exit(EXIT_FAILURE);
+        }
+    }
+    
+}
+
+// ************************ how expressions are built by just calling expression() once ***************
+// these parser functions build expressions from the inmost function - primary() - to the outermost -expression() in a recursive manner
+// i.e going inwards upto the center, then building upwards while recursively going inwards again to comb through every function for matching tokens
 
 // function to parse an expression
 void expression()
@@ -583,6 +630,29 @@ void primary()
     {
         next_token("primary 1"); // consume '(' and go the next token
         expression();
+
+
+        
+        if (tokens[pos].type == SYMBOL && strcmp(tokens[pos].value, ",") == 0)
+        {
+            next_token("primary");
+
+            if (strcmp(tokens[pos].value, "\"") == 0 || tokens[pos].type == STRING)
+            {
+                printf("\n\n❌ ERROR! String or '\"' not expected. Expected id, num or symbol, found %s\n", tokens[pos].value);
+                exit(EXIT_FAILURE);
+            }
+            else if (tokens[pos].type == IDENTIFIER || tokens[pos].type == NUMBER)
+            {
+                expression();
+            }
+
+            else if (strcmp(tokens[pos].value, "&") == 0 && tokens[pos + 1].type == IDENTIFIER)
+            {
+                next_token("primary"); // consume '&' and go the next token
+                expression();
+            }
+        }
     }
     else
     {

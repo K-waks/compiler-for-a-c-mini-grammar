@@ -20,4 +20,6 @@ int main()
         printf("This will loop five times\n");
         x = x + 1;
     }
+
+    return 0;
 }
