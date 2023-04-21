@@ -15,7 +15,7 @@ enum Token_Type
 };
 
 // function prototypes for the parser
-enum Token_Type next_token(char location[50]);
+enum Token_Type next_token(char *location);
 void program();
 void statement();
 void variable_declaration();
@@ -234,7 +234,7 @@ int main()
     puts("\nScanning successful✅ !");
 
     // **************************************** PARSING *********************************************
-    printf("\n%d. %s of type %d  in main. (start token) \n\n", pos, tokens[pos].value, tokens[pos].type);
+    printf("\n%d.)   %s of type %d  in main. (start token) \n\n", pos, tokens[pos].value, tokens[pos].type);
     program();
     if (tokens[pos].type == EOF)
     {
@@ -257,7 +257,7 @@ enum Token_Type next_token(char *location)
     pos++;
 
     // For debugging purposes
-    printf("\n%d.             %s of type %d  called in  %s\n\n", pos, tokens[pos].value, tokens[pos].type, location);
+    printf("\n%d.)   %s of type %d  called in  %s\n\n", pos, tokens[pos].value, tokens[pos].type, location);
 
     return tokens[pos].type;
 }
