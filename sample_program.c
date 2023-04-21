@@ -1,3 +1,12 @@
-int x = 2;
-int y = 4;
-int how;
+void main()
+{
+    int x = 4;
+    int y = 6;
+
+    if (y <= x)
+    {
+    }
+    else
+    {
+    }
+}
