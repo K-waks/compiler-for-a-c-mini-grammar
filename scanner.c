@@ -256,7 +256,7 @@ enum Token_Type next_token(char *location)
 {
     pos++;
 
-    // For debugging purposes
+    // The location variable is just debugging purposes to show where exactly a token is being read from.
     printf("\n%d.)   %s of type %d  called in  %s\n\n", pos, tokens[pos].value, tokens[pos].type, location);
 
     return tokens[pos].type;
@@ -287,16 +287,13 @@ void statement()
         {
             if_statement();
         }
-        // else if (strcmp(tokens[pos].value, "while") == 0)
-        // {
-        //     while_statement();
-        // }
-        // else if (strcmp(tokens[pos].value, "return") == 0)
-        // {
-        //     return_statement();
-        // }
+        else if (strcmp(tokens[pos].value, "while") == 0)
+        {
+            while_statement();
+        }
         break;
     case IDENTIFIER:
+    case NUMBER:
         expression_statement();
         break;
     default:
@@ -345,6 +342,15 @@ void function_declaration()
 void expression_statement()
 {
     expression();
+    if (tokens[pos].type == SYMBOL && strcmp(tokens[pos].value, ";") == 0)
+    {
+        next_token("expression_statement() 1"); // consume ';' and go the next token
+    }
+    else
+    {
+        printf("\n\n❌ ERROR! Expecting a ';'.\n\n");
+        exit(EXIT_FAILURE);
+    }
 }
 
 void block()
@@ -400,7 +406,32 @@ void if_statement()
     }
 }
 
-// redo
+void while_statement()
+{
+
+    next_token("while statement 1"); // consume 'while' and go the next token
+
+    if (tokens[pos].type != SYMBOL || strcmp(tokens[pos].value, "(") != 0)
+    {
+        printf("\n\nSyntax error ❌: expected '(', found %s\n", tokens[pos].value);
+        exit(EXIT_FAILURE);
+    }
+
+    expression();
+
+    if (tokens[pos].type == SYMBOL && strcmp(tokens[pos].value, ")") == 0)
+    {
+        next_token("while statement 2"); // consume ')' and go the next token
+    }
+    else
+    {
+        printf("\n\n❌ ERROR! Closing parenthesis expected.\n\n");
+        exit(EXIT_FAILURE);
+    }
+
+    block();
+}
+
 void assignment()
 {
     next_token("assignment 1"); // consume '=' and go to the next token
@@ -525,7 +556,6 @@ void identifier()
     if (tokens[pos].type == IDENTIFIER)
     {
         next_token("identifier"); // consume the identifier and go the next token
-
     }
     else
     {
