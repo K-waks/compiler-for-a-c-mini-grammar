@@ -1,25 +1,6 @@
-~old_grp11Ccompiler/main
-
-~old_grp11Ccompiler/compiler/build/*.o
-
-~old_grp11Ccompiler/compiler/build/helpers/*.o
-
-sample_program
-
 ~roughwork
+C
+main
 
-grp11compiler
 
-parser*
-
-old/compiler
-old/compile
-
-debug
-
-.vscode
-
-compiler.h
-
-new
 
