@@ -36,7 +36,7 @@ void declaration()
     }
     else
     {
-        printf("\n\n❌ Syntax ERROR! Expected declaration.\n\n");
+        printf("\n\n❌ Syntax ERROR! Expected declaration. (Note: Statements should not be written globally but inside funtions.)\n\n");
         printf("\n🚫 Parser FAILURE!\n\n");
         exit(EXIT_FAILURE);
     }
