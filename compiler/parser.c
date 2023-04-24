@@ -53,7 +53,7 @@ void variable_declaration()
         identifier(); // consume identifier and go to the next token   |    declaration only e.g int hello;
     }
 
-    while (tokens[pos].type == SYMBOL && strcmp(tokens[pos].value, ",") == 0)     // comma separated declarations e.g int thank, you, jesus = infinity;
+    while (tokens[pos].type == SYMBOL && strcmp(tokens[pos].value, ",") == 0) // comma separated declarations e.g int hello, input, count = 0;
     {
         match(","); // consume ',' and go to the next token
         if (tokens[pos].type == IDENTIFIER && strcmp(tokens[pos + 1].value, "=") == 0)
@@ -66,7 +66,7 @@ void variable_declaration()
         }
     }
 
-    if (!strcmp(tokens[pos].value, ";") == 0)  // declarations must end with semi-colon
+    if (!strcmp(tokens[pos].value, ";") == 0) // declarations must end with semi-colon
     {
         printf("\n\n❌ Syntax ERROR! Expected ';' at the end of variable declaration\n\n");
         printf("\n🚫 Parser FAILURE!\n\n");
@@ -165,69 +165,6 @@ void statement()
     }
 }
 
-void expression_statement()
-{
-    if (tokens[pos].type == IDENTIFIER && strcmp(tokens[pos + 1].value, "=") == 0)
-    {
-        assignment();
-    }
-    else if (tokens[pos].type == IDENTIFIER && strcmp(tokens[pos + 1].value, "(") == 0)
-    {
-        identifier(); // consume identifier and go to the next token
-        match("(");   // consume '(' and go to the next token
-
-        if (!strcmp(tokens[pos].value, ")") == 0)
-            expression();
-
-        if (tokens[pos].type == SYMBOL && strcmp(tokens[pos].value, "(") == 0)
-            expression();
-
-        while (tokens[pos].type == SYMBOL && strcmp(tokens[pos].value, ",") == 0)
-        {
-            match(","); // consume ',' and go to the next token
-            if (strcmp(tokens[pos].value, "\"") == 0 || tokens[pos].type == STRING)
-            {
-                printf("\n\n❌ Syntax ERROR! String or '\"' not expected. Expected id, num or symbol, found %s\n", tokens[pos].value);
-                printf("\n🚫 Parser FAILURE!\n\n");
-                exit(EXIT_FAILURE);
-            }
-            else if (strcmp(tokens[pos].value, "&") == 0 && tokens[pos + 1].type == IDENTIFIER)
-            {
-                match("&"); // consume '&' and go the next token
-                expression();
-            }
-            else if (tokens[pos].type == IDENTIFIER && strcmp(tokens[pos + 1].value, "(") == 0)
-            {
-                expression();
-                if (tokens[pos].type == SYMBOL && strcmp(tokens[pos].value, "(") == 0)
-                    expression();
-            }
-            else
-                expression();
-        }
-
-        if (!strcmp(tokens[pos].value, ")") == 0)
-        {
-            printf("\n\n❌ Syntax ERROR! Closing parenthesis expected.\n\n");
-            printf("\n🚫 Parser FAILURE!\n\n");
-            exit(EXIT_FAILURE);
-        }
-        match(")"); // match ')'
-    }
-    else
-    {
-        expression();
-    }
-    if (!strcmp(tokens[pos].value, ";") == 0)
-    {
-        printf("\n\n❌ Syntax ERROR! Expecting a ';'.\n\n");
-        printf("\n🚫 Parser FAILURE!\n\n");
-        exit(EXIT_FAILURE);
-    }
-
-    match(";"); // consume ';' and go to the next token
-}
-
 void if_statement()
 {
     match("if"); // consume 'if' and go to the next token
@@ -279,11 +216,15 @@ void return_statement()
 {
     if (tokens[pos].type == KEYWORD && tokens[pos + 1].type == IDENTIFIER && strcmp(tokens[pos + 2].value, "=") == 0)
     {
+        // e.g return sum=2;
         match("return"); // consume return and go to the next token
-        assignment();    // e.g return sum=2;
+        assignment();
     }
-    else if (tokens[pos].type == KEYWORD && strcmp(tokens[pos + 1].value, "(") == 0)
+    else if (tokens[pos].type == KEYWORD && strcmp(tokens[pos + 1].value, "(") == 0) // e.g return (0);
     {
+        // return with brackets e.g
+        // return (0);
+        // return (n(n*2)/3);
         match("return"); // consume return and go to the next token
         match("(");      // consume '(' and go to the next token
 
@@ -304,6 +245,9 @@ void return_statement()
     }
     else
     {
+        // return without brackets
+        // return 0;
+        // return n(n*2)/3;
         match("return"); // consume return and go to the next token
         expression();
         if (tokens[pos].type == SYMBOL && strcmp(tokens[pos].value, "(") == 0)
@@ -319,6 +263,79 @@ void return_statement()
                 exit(EXIT_FAILURE);
             }
         match(")"); // match ')
+    }
+    if (!strcmp(tokens[pos].value, ";") == 0)
+    {
+        printf("\n\n❌ Syntax ERROR! Expecting a ';'.\n\n");
+        printf("\n🚫 Parser FAILURE!\n\n");
+        exit(EXIT_FAILURE);
+    }
+
+    match(";"); // consume ';' and go to the next token
+}
+
+void expression_statement()
+{
+    if (tokens[pos].type == IDENTIFIER && strcmp(tokens[pos + 1].value, "=") == 0)
+    {
+        // e.g sum = 0;
+        assignment();
+    }
+    else if (tokens[pos].type == IDENTIFIER && strcmp(tokens[pos + 1].value, "(") == 0)
+    {
+        // e.g printf();
+        identifier(); // consume identifier and go to the next token
+        match("(");   // consume '(' and go to the next token
+
+        if (!strcmp(tokens[pos].value, ")") == 0)
+        {
+            expression();
+        }
+
+        if (tokens[pos].type == SYMBOL && strcmp(tokens[pos].value, "(") == 0)
+        {
+            // to deal with nested brackets
+            expression();
+        }
+
+        while (tokens[pos].type == SYMBOL && strcmp(tokens[pos].value, ",") == 0)
+        {
+            // e.g scanf("Enter a value: %d", &input);
+
+            match(","); // consume ',' and go to the next token
+            if (strcmp(tokens[pos].value, "\"") == 0 || tokens[pos].type == STRING)
+            {
+                printf("\n\n❌ Syntax ERROR! String or '\"' not expected. Expected id, num or symbol, found %s\n", tokens[pos].value);
+                printf("\n🚫 Parser FAILURE!\n\n");
+                exit(EXIT_FAILURE);
+            }
+            else if (strcmp(tokens[pos].value, "&") == 0 && tokens[pos + 1].type == IDENTIFIER)
+            {
+                match("&"); // consume '&' and go the next token
+                expression();
+            }
+            else if (tokens[pos].type == IDENTIFIER && strcmp(tokens[pos + 1].value, "(") == 0)
+            {
+               // e.g printf("%d", n + sum(n - 1)); | to deal with nested brackets after the comma
+                expression();
+                if (tokens[pos].type == SYMBOL && strcmp(tokens[pos].value, "(") == 0)
+                    expression();
+            }
+            else
+                expression();
+        }
+
+        if (!strcmp(tokens[pos].value, ")") == 0)
+        {
+            printf("\n\n❌ Syntax ERROR! Closing parenthesis expected.\n\n");
+            printf("\n🚫 Parser FAILURE!\n\n");
+            exit(EXIT_FAILURE);
+        }
+        match(")"); // match ')'
+    }
+    else
+    {
+        expression();
     }
     if (!strcmp(tokens[pos].value, ";") == 0)
     {
