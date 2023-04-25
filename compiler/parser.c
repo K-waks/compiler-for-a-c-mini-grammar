@@ -197,7 +197,7 @@ void statement()
 
 void if_statement()
 {
-    printf("IF->[");
+    printf("IF_STATEMENT->[");
 
     match("if"); // consume 'if' and go to the next token
 
@@ -223,7 +223,7 @@ void if_statement()
 
 void while_statement()
 {
-    printf("WHILE->[");
+    printf("WHILE_STATEMENT->[");
 
     match("while"); // consume 'while' and go to the next token
 
@@ -243,7 +243,7 @@ void while_statement()
 
 void return_statement()
 {
-    printf("RETURN->[");
+    printf("RETURN_STATEMENT->[");
 
     if (tokens[pos].type == KEYWORD && tokens[pos + 1].type == IDENTIFIER && strcmp(tokens[pos + 2].value, "=") == 0)
     {
