@@ -218,7 +218,7 @@ void if_statement()
         block();
     }
 
-    printf("]");
+    printf("]"); 
 }
 
 void while_statement()
@@ -605,7 +605,7 @@ void identifier()
         printf("\n🚫 Parser FAILURE!\n\n");
         exit(EXIT_FAILURE);
     }
-    printf("IDENTIFIER->['%s']", tokens[pos].value); // printing the terminal node to the parser tree  
+    printf("IDENTIFIER->['%s']", tokens[pos].value); // printing the terminal node adding it to the parser tree   
     pos++;
 }
 
@@ -617,7 +617,7 @@ void number()
         printf("\n🚫 Parser FAILURE!\n\n");
         exit(EXIT_FAILURE);
     }
-    printf("NUMBER->['%s']", tokens[pos].value); // printing the terminal node to the parser tree  
+    printf("NUMBER->['%s']", tokens[pos].value); // printing the terminal node adding it to the parser tree  
     pos++;
 }
 
