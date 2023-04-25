@@ -4,6 +4,7 @@ int pos = 0;
 // entry point for the parser functions
 int parser()
 {
+
     program();
 
     if (tokens[pos].type == EOF)
@@ -112,6 +113,7 @@ void parameter_declaration()
                 printf("\n🚫 Parser FAILURE!\n\n");
                 exit(EXIT_FAILURE);
             }
+
             type_specifier(); // consume int, char or float and go to the next token
             identifier();     // consume identifier and go to the next token
         }
@@ -127,7 +129,7 @@ void block()
         exit(EXIT_FAILURE);
     }
     match("{"); // consume '{' and go to the next token
-    while (tokens[pos].type != SYMBOL || strcmp(tokens[pos].value, "}") == 1)
+    while (!strcmp(tokens[pos].value, "}") == 0)
     {
         if (tokens[pos].type == KEYWORD && (strcmp(tokens[pos].value, "int") == 0 || strcmp(tokens[pos].value, "float") == 0 || strcmp(tokens[pos].value, "char") == 0))
         {
@@ -201,14 +203,6 @@ void while_statement()
 
     expression();
 
-    if (!strcmp(tokens[pos].value, ")") == 0)
-    {
-        printf("\n\n❌ Syntax ERROR! Closing parenthesis expected.\n\n");
-        printf("\n🚫 Parser FAILURE!\n\n");
-        exit(EXIT_FAILURE);
-    }
-    match(")"); // consume ')' and go to the next token
-
     block();
 }
 
@@ -220,6 +214,7 @@ void return_statement()
         match("return"); // consume return and go to the next token
         assignment();
     }
+
     else if (tokens[pos].type == KEYWORD && strcmp(tokens[pos + 1].value, "(") == 0) // e.g return (0);
     {
         // return with brackets e.g
@@ -316,7 +311,7 @@ void expression_statement()
             }
             else if (tokens[pos].type == IDENTIFIER && strcmp(tokens[pos + 1].value, "(") == 0)
             {
-               // e.g printf("%d", n + sum(n - 1)); | to deal with nested brackets after the comma
+                // e.g printf("%d", n + sum(n - 1)); | to deal with nested brackets after the comma
                 expression();
                 if (tokens[pos].type == SYMBOL && strcmp(tokens[pos].value, "(") == 0)
                     expression();
@@ -558,7 +553,7 @@ void match(char *value)
         switch (tokens[pos].type)
         {
         case KEYWORD:
-            if (tokens[pos].type != KEYWORD)
+            if (tokens[pos].type != KEYWORD) // match("if")
             {
                 printf("\n\n❌ Syntax ERROR! Expected keyword, but got %s.\n\n", tokens[pos].value);
                 printf("\n🚫 Parser FAILURE!\n\n");
@@ -567,7 +562,7 @@ void match(char *value)
             pos++;
             break;
         case OPERATOR:
-            if (tokens[pos].type != OPERATOR)
+            if (tokens[pos].type != OPERATOR) // match("+")
             {
                 printf("\n\n❌ Syntax ERROR! Expected operator, but got %s.\n\n", tokens[pos].value);
                 printf("\n🚫 Parser FAILURE!\n\n");
@@ -576,7 +571,7 @@ void match(char *value)
             pos++;
             break;
         case SYMBOL:
-            if (tokens[pos].type != SYMBOL)
+            if (tokens[pos].type != SYMBOL) // match("{")
             {
                 printf("\n\n❌ Syntax ERROR! Expected symbol, but got %s.\n\n", tokens[pos].value);
                 printf("\n🚫 Parser FAILURE!\n\n");

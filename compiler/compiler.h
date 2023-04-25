@@ -11,7 +11,7 @@ enum Token_Type
     OPERATOR = 35,
     SYMBOL = 36,
 
-    // enum to handle unrecognized tokens
+    // enum to handle unrecognized tokens and help in error handling
     INVALID_TOKEN = 37
 };
 
