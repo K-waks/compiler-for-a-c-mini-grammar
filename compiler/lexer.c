@@ -30,7 +30,7 @@ enum Token_Type get_token(FILE *fp, char *buffer)
             }
             ungetc(c, fp);
             buffer[buffer_len] = '\0';
-            if (strcmp(buffer, "void") == 0 || strcmp(buffer, "int") == 0 || strcmp(buffer, "char") == 0 || strcmp(buffer, "float") == 0 || strcmp(buffer, "if") == 0 || strcmp(buffer, "else") == 0 || strcmp(buffer, "while") == 0 || strcmp(buffer, "for") == 0 || strcmp(buffer, "break") == 0 || strcmp(buffer, "continue") == 0 || strcmp(buffer, "switch") == 0 || strcmp(buffer, "case") == 0 || strcmp(buffer, "return") == 0)
+            if (strcmp(buffer, "void") == 0 || strcmp(buffer, "int") == 0 || strcmp(buffer, "char") == 0 || strcmp(buffer, "float") == 0 || strcmp(buffer, "if") == 0 || strcmp(buffer, "else") == 0 || strcmp(buffer, "while") == 0 || strcmp(buffer, "for") == 0 || strcmp(buffer, "break") == 0 || strcmp(buffer, "continue") == 0 || strcmp(buffer, "switch") == 0 || strcmp(buffer, "case") == 0 || strcmp(buffer, "return") == 0 || strcmp(buffer, "do") == 0)
             {
                 return KEYWORD;
             }
