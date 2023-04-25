@@ -58,7 +58,7 @@ int main()
         printf("\n🚫 Parser FAILURE!\n\n");
         break;
     case EXIT_SUCCESS:
-        printf("\n✅ Parsing successful. Execution time: %f seconds\n\n", parser_cpu_time_used);
+        printf("\n\n✅ Parsing successful. Execution time: %f seconds\n\n", parser_cpu_time_used);
         break;
     default:
         printf("\n⛔ Parser could not be called.\n\n");

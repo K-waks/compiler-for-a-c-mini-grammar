@@ -17,14 +17,20 @@ int parser()
 // -------------------------------------------------------------
 void program()
 {
+    printf("PROGRAM->[");
+
     while (tokens[pos].type != EOF)
     {
         declaration();
     }
+
+    printf("]");
 }
 
 void declaration()
 {
+    printf("DECLARATION->[");
+
     if (tokens[pos].type == KEYWORD && tokens[pos + 1].type == IDENTIFIER && strcmp(tokens[pos + 2].value, "(") == 0)
     {
         type_specifier(); // consume int, float, char or void and go to the next token
@@ -41,10 +47,14 @@ void declaration()
         printf("\n🚫 Parser FAILURE!\n\n");
         exit(EXIT_FAILURE);
     }
+
+    printf("]");
 }
 
 void variable_declaration()
 {
+    printf("VARIABLE DECLARATION->[");
+
     if (tokens[pos].type == IDENTIFIER && strcmp(tokens[pos + 1].value, "=") == 0)
     {
         assignment(); // declaration with assignment operation e.g int hello = 3;
@@ -74,10 +84,14 @@ void variable_declaration()
         exit(EXIT_FAILURE);
     }
     match(";"); // consume ';' and go to the next token
+
+    printf("]");
 }
 
 void function_declaration()
 {
+    printf("FUNCTION DECLARATION->[");
+
     identifier(); // consume identifier and go to the next token
     match("(");   // consume '(' and go to the next token
 
@@ -92,10 +106,14 @@ void function_declaration()
     }
     match(")"); // consume ')' and go to the next token
     block();
+
+    printf("]");
 }
 
 void parameter_declaration()
 {
+    printf("PARAMETER DECLARATION->[");
+
     if (tokens[pos].type == KEYWORD && strcmp(tokens[pos].value, "void") == 0)
     {
         type_specifier(); // consume void only and go to the next token
@@ -118,10 +136,14 @@ void parameter_declaration()
             identifier();     // consume identifier and go to the next token
         }
     }
+
+    printf("]");
 }
 
 void block()
 {
+    printf("BLOCK->[");
+
     if (!strcmp(tokens[pos].value, "{") == 0)
     {
         printf("\n\n❌ Syntax ERROR! Expected '{', found %s\n", tokens[pos].value);
@@ -145,10 +167,14 @@ void block()
         exit(EXIT_FAILURE);
     }
     match("}"); // consume '}' and go to the next token
+
+    printf("]");
 }
 
 void statement()
 {
+    printf("STATEMENT->[");
+
     if (tokens[pos].type == KEYWORD && strcmp(tokens[pos].value, "if") == 0)
     {
         if_statement();
@@ -165,10 +191,14 @@ void statement()
     {
         expression_statement();
     }
+
+    printf("]");
 }
 
 void if_statement()
 {
+    printf("IF->[");
+
     match("if"); // consume 'if' and go to the next token
 
     if (!strcmp(tokens[pos].value, "(") == 0)
@@ -187,10 +217,13 @@ void if_statement()
         match("else"); // consume 'else' and go to the next token
         block();
     }
+
+    printf("]");
 }
 
 void while_statement()
 {
+    printf("WHILE->[");
 
     match("while"); // consume 'while' and go to the next token
 
@@ -204,10 +237,14 @@ void while_statement()
     expression();
 
     block();
+
+    printf("]");
 }
 
 void return_statement()
 {
+    printf("RETURN->[");
+
     if (tokens[pos].type == KEYWORD && tokens[pos + 1].type == IDENTIFIER && strcmp(tokens[pos + 2].value, "=") == 0)
     {
         // e.g return sum=2;
@@ -267,10 +304,14 @@ void return_statement()
     }
 
     match(";"); // consume ';' and go to the next token
+
+    printf("]");
 }
 
 void expression_statement()
 {
+    printf("EXPR_STATEMENT->[");
+
     if (tokens[pos].type == IDENTIFIER && strcmp(tokens[pos + 1].value, "=") == 0)
     {
         // e.g sum = 0;
@@ -340,6 +381,8 @@ void expression_statement()
     }
 
     match(";"); // consume ';' and go to the next token
+
+    printf("]");
 }
 
 // Expressions are built from the inmost function - primary() - to the outermost -expression() in a recursive manner
@@ -348,34 +391,48 @@ void expression_statement()
 // function to parse an expression starts from here till primary()
 void expression()
 {
+    printf("EXPRESSION->[");
+
     logical_or();
+
+    printf("]");
 }
 
 // logical OR operation
 void logical_or()
 {
+    printf("lOGICAL_OR->[");
+
     logical_and();
     while (tokens[pos].type == OPERATOR && strcmp(tokens[pos].value, "||") == 0)
     {
         match("||"); // consume '||' and go to the next token
         logical_and();
     }
+
+    printf("]");
 }
 
 // logical AND operation
 void logical_and()
 {
+    printf("lOGICAL_AND->[");
+
     equality();
     while (tokens[pos].type == OPERATOR && strcmp(tokens[pos].value, "&&") == 0)
     {
         match("&&"); // consume '&&' and go to the next token
         equality();
     }
+
+    printf("]");
 }
 
 // equality operator
 void equality()
 {
+    printf("EQUALITY->[");
+
     comparison();
     while (tokens[pos].type == OPERATOR && (strcmp(tokens[pos].value, "==") == 0 || strcmp(tokens[pos].value, "!=") == 0))
     {
@@ -386,11 +443,15 @@ void equality()
 
         comparison();
     }
+
+    printf("]");
 }
 
 // comparison operator
 void comparison()
 {
+    printf("COMPARISON->[");
+
     assignment();
     while (tokens[pos].type == OPERATOR && (strcmp(tokens[pos].value, ">") == 0 || strcmp(tokens[pos].value, "<") == 0 ||
                                             strcmp(tokens[pos].value, ">=") == 0 || strcmp(tokens[pos].value, "<=") == 0))
@@ -406,22 +467,30 @@ void comparison()
 
         assignment();
     }
+
+    printf("]");
 }
 
 // assignment operation
 void assignment()
 {
+    printf("ASSIGNMENT->[");
+
     term();
     while (tokens[pos].type == OPERATOR && (strcmp(tokens[pos].value, "=") == 0))
     {
         match("="); // consume '=' and go to the next token
         term();
     }
+
+    printf("]");
 }
 
 // term operation
 void term()
 {
+    printf("TERM->[");
+
     factor();
     while (tokens[pos].type == OPERATOR && (strcmp(tokens[pos].value, "+") == 0 || strcmp(tokens[pos].value, "-") == 0))
     {
@@ -432,11 +501,15 @@ void term()
 
         factor();
     }
+
+    printf("]");
 }
 
 // factor operation
 void factor()
 {
+    printf("FACTOR->[");
+
     unary();
     while (tokens[pos].type == OPERATOR && (strcmp(tokens[pos].value, "*") == 0 || strcmp(tokens[pos].value, "/") == 0 || strcmp(tokens[pos].value, "%") == 0))
     {
@@ -449,11 +522,15 @@ void factor()
 
         unary();
     }
+
+    printf("]");
 }
 
 // unary operation
 void unary()
 {
+    printf("UNARY->[");
+
     if (tokens[pos].type == OPERATOR && (strcmp(tokens[pos].value, "-") == 0 || strcmp(tokens[pos].value, "!") == 0))
     {
         if (strcmp(tokens[pos].value, "-") == 0)
@@ -462,11 +539,15 @@ void unary()
             match("!"); // consume '!' and go to the next token
     }
     primary();
+
+    printf("]");
 }
 
 // primary operation
 void primary()
 {
+    printf("PRIMARY->[");
+
     if (tokens[pos].type == IDENTIFIER)
     {
         identifier(); // consume identifier and go to the next token
@@ -499,17 +580,20 @@ void primary()
         printf("\n🚫 Parser FAILURE!\n\n");
         exit(EXIT_FAILURE);
     }
+
+    printf("]");
 }
 // *************************************************************************************
 
 void type_specifier()
 {
-    if (!(strcmp(tokens[pos].value, "int") == 0 || strcmp(tokens[pos].value, "void") == 0 || strcmp(tokens[pos].value, "char") == 0 || strcmp(tokens[pos].value, "float") == 0))
+   if (!(strcmp(tokens[pos].value, "int") == 0 || strcmp(tokens[pos].value, "void") == 0 || strcmp(tokens[pos].value, "char") == 0 || strcmp(tokens[pos].value, "float") == 0))
     {
         printf("\n\n❌ Syntax ERROR! Expected type-specifier\n\n");
         printf("\n🚫 Parser FAILURE!\n\n");
         exit(EXIT_FAILURE);
     }
+    printf("TYPE-SPECIFIER->[%s]", tokens[pos].value); // printing the terminal node to the parser tree  
     pos++;
 }
 
@@ -521,6 +605,7 @@ void identifier()
         printf("\n🚫 Parser FAILURE!\n\n");
         exit(EXIT_FAILURE);
     }
+    printf("IDENTIFIER->[%s]", tokens[pos].value); // printing the terminal node to the parser tree  
     pos++;
 }
 
@@ -532,6 +617,7 @@ void number()
         printf("\n🚫 Parser FAILURE!\n\n");
         exit(EXIT_FAILURE);
     }
+    printf("NUMBER->[%s]", tokens[pos].value); // printing the terminal node to the parser tree  
     pos++;
 }
 
@@ -543,6 +629,7 @@ void string()
         printf("\n🚫 Parser FAILURE!\n\n");
         exit(EXIT_FAILURE);
     }
+    printf("STRING->[%s]", tokens[pos].value);
     pos++;
 }
 
@@ -553,30 +640,34 @@ void match(char *value)
         switch (tokens[pos].type)
         {
         case KEYWORD:
-            if (tokens[pos].type != KEYWORD) // match("if")
+            if (tokens[pos].type != KEYWORD) // e.g match("if")
             {
                 printf("\n\n❌ Syntax ERROR! Expected keyword, but got %s.\n\n", tokens[pos].value);
                 printf("\n🚫 Parser FAILURE!\n\n");
                 exit(EXIT_FAILURE);
             }
+            printf("keyword->[%s]", tokens[pos].value);
+
             pos++;
             break;
         case OPERATOR:
-            if (tokens[pos].type != OPERATOR) // match("+")
+            if (tokens[pos].type != OPERATOR) // e.g match("+")
             {
                 printf("\n\n❌ Syntax ERROR! Expected operator, but got %s.\n\n", tokens[pos].value);
                 printf("\n🚫 Parser FAILURE!\n\n");
                 exit(EXIT_FAILURE);
             }
+            printf("operator->[%s]", tokens[pos].value);
             pos++;
             break;
         case SYMBOL:
-            if (tokens[pos].type != SYMBOL) // match("{")
+            if (tokens[pos].type != SYMBOL) // e.g match("{")
             {
                 printf("\n\n❌ Syntax ERROR! Expected symbol, but got %s.\n\n", tokens[pos].value);
                 printf("\n🚫 Parser FAILURE!\n\n");
                 exit(EXIT_FAILURE);
             }
+            printf("symbol->[%s]", tokens[pos].value);
             pos++;
             break;
         default:
