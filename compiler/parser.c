@@ -593,7 +593,7 @@ void type_specifier()
         printf("\n🚫 Parser FAILURE!\n\n");
         exit(EXIT_FAILURE);
     }
-    printf("TYPE-SPECIFIER->[%s]", tokens[pos].value); // printing the terminal node to the parser tree  
+    printf("TYPE-SPECIFIER->['%s']", tokens[pos].value); // printing the terminal node to the parser tree  
     pos++;
 }
 
@@ -605,7 +605,7 @@ void identifier()
         printf("\n🚫 Parser FAILURE!\n\n");
         exit(EXIT_FAILURE);
     }
-    printf("IDENTIFIER->[%s]", tokens[pos].value); // printing the terminal node to the parser tree  
+    printf("IDENTIFIER->['%s']", tokens[pos].value); // printing the terminal node to the parser tree  
     pos++;
 }
 
@@ -617,7 +617,7 @@ void number()
         printf("\n🚫 Parser FAILURE!\n\n");
         exit(EXIT_FAILURE);
     }
-    printf("NUMBER->[%s]", tokens[pos].value); // printing the terminal node to the parser tree  
+    printf("NUMBER->['%s']", tokens[pos].value); // printing the terminal node to the parser tree  
     pos++;
 }
 
@@ -629,7 +629,7 @@ void string()
         printf("\n🚫 Parser FAILURE!\n\n");
         exit(EXIT_FAILURE);
     }
-    printf("STRING->[%s]", tokens[pos].value);
+    printf("STRING->['%s']", tokens[pos].value);
     pos++;
 }
 
@@ -646,7 +646,7 @@ void match(char *value)
                 printf("\n🚫 Parser FAILURE!\n\n");
                 exit(EXIT_FAILURE);
             }
-            printf("keyword->[%s]", tokens[pos].value);
+            printf("keyword->['%s']", tokens[pos].value);
 
             pos++;
             break;
@@ -657,7 +657,7 @@ void match(char *value)
                 printf("\n🚫 Parser FAILURE!\n\n");
                 exit(EXIT_FAILURE);
             }
-            printf("operator->[%s]", tokens[pos].value);
+            printf("operator->['%s']", tokens[pos].value);
             pos++;
             break;
         case SYMBOL:
@@ -667,7 +667,7 @@ void match(char *value)
                 printf("\n🚫 Parser FAILURE!\n\n");
                 exit(EXIT_FAILURE);
             }
-            printf("symbol->[%s]", tokens[pos].value);
+            printf("symbol->['%s']", tokens[pos].value);
             pos++;
             break;
         default:
