@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include <ctype.h>
 #include <string.h>
-#include "compiler/compiler.h"
+#include "compiler.h"
 
 Token_Type get_token(FILE *fp, char *buffer)
 {
