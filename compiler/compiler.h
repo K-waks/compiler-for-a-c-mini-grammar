@@ -1,8 +1,8 @@
-#ifndef C_COMPILER_H
-#define C_COMPILER_H
+#ifndef COMPILER_H
+#define COMPILER_H
 
 // token type enumerations
-enum Token_Type
+typedef enum
 {
     KEYWORD = 31,
     IDENTIFIER = 32,
@@ -13,22 +13,23 @@ enum Token_Type
 
     // enum to handle unrecognized tokens and help in error handling
     INVALID_TOKEN = 37
-};
+    
+} Token_Type;
 
 // tokens will be in the form of structs so that their attributes can be filled and accessed.
-struct Token
+typedef struct
 {
-    enum Token_Type type;
+    Token_Type type;
     union
     {
         char value[256];
         int ivalue;
         float fvalue;
     };
-};
+} Token;
 
 // array of data type struct Token that stores a max of 1000 tokens (struct Token instances)
-struct Token tokens[1000];
+Token tokens[1000];
 
 // function prototypes for the parser
 void program();

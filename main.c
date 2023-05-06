@@ -1,10 +1,4 @@
-#include <stdio.h>
-#include <stdlib.h>
 #include <time.h>
-#include <ctype.h>
-#include <string.h>
-#include "compiler/compiler.h"
-#include "compiler/lexer.c"
 #include "compiler/parser.c"
 
 

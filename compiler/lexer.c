@@ -1,4 +1,10 @@
-enum Token_Type get_token(FILE *fp, char *buffer)
+#include <stdio.h>
+#include <stdlib.h>
+#include <ctype.h>
+#include <string.h>
+#include "compiler/compiler.h"
+
+Token_Type get_token(FILE *fp, char *buffer)
 {
     int c;
     int buffer_len = 0;
@@ -131,7 +137,7 @@ int lexer()
     
 
     // saving each token to the struct array while printing to the terminal
-    enum Token_Type token_type;
+    Token_Type token_type;
     int token_count = 0;
 
     while ((token_type = get_token(fp, buffer)) != EOF)
@@ -165,14 +171,14 @@ int lexer()
         default:
             break;
         }
-        struct Token current_tkn;
+        Token current_tkn;
         current_tkn.type = token_type;
         strcpy(current_tkn.value, buffer);
         tokens[token_count++] = current_tkn; // adding the token (struct) to our array of structs.
     }
 
     // adding the terminating symbol to the end of the array that will be used to tell the parser that we've reached the end of parsing
-    struct Token terminator;
+    Token terminator;
     terminator.type = EOF;
     strcpy(terminator.value, "$");
     tokens[token_count++] = terminator;

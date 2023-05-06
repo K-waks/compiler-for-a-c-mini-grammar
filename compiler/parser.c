@@ -1,3 +1,5 @@
+#include "lexer.c"
+
 // indexes the tokens.
 int pos = 0;
 
