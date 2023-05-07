@@ -70,5 +70,6 @@ Node *string();
 Node *match(char *value);
 Node *new_node(char *value);
 void add_child(Node *parent, Node *child);
+void print_tree(Node *node, int depth);
 
 #endif
