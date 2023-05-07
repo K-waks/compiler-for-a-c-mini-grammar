@@ -4,6 +4,48 @@ int pos = 0; // indexes the tokens.
 
 Node *root; // root node
 
+/* ************************************************** HELPER FUNCTIONS ******************************************/
+
+Node *new_node(char *value, Node_Type type) // function to create a new node
+{
+    Node *node = (Node *)malloc(sizeof(Node));
+    strcpy(node->value, value);
+    node->type = type;
+    node->num_children = 0;
+    return node;
+}
+
+void add_child(Node *parent, Node *child) // function to add a child to a node in the parse tree
+{
+    parent->children[parent->num_children] = child;
+    parent->num_children++;
+}
+
+void print_tree(Node *node, int depth) // function to display parse tree onto the terminal
+{
+    int i;
+
+    for (i = 0; i < depth; i++)
+    {
+        printf("  ");
+    }
+
+    if (node->type == NON_TERMINAL)
+    {
+        printf("\033[32m%s\033[0m\n", node->value); // non-terminals are displayed in color green
+    }
+    else
+    {
+        printf("\033[34m%s\033[0m\n", node->value); // terminals in color blue
+    }
+
+    for (i = 0; i < node->num_children; i++)
+    {
+        printf("\n");
+        print_tree(node->children[i], depth + 1);
+    }
+}
+
 /* **********************************************PARSER FUNCTIONS ******************************************************/
 
 int parser() // entry point for the parser functions
@@ -21,7 +63,9 @@ int parser() // entry point for the parser functions
         return EXIT_SUCCESS;
     }
     else
+    {
         return EXIT_FAILURE;
+    }
 }
 
 Node *declaration()
@@ -195,7 +239,9 @@ Node *return_statement()
     }
     // return withiout brackets e.g. return 0;
     else
+    {
         add_child(node, expression());
+    }
 
     add_child(node, match(";")); // consume ';' and go to the next token
 
@@ -224,6 +270,7 @@ Node *nested()
         {
             add_child(node, match(","));
             add_child(node, expression());
+
             if (strcmp(tokens[pos - 1].value, "&") == 0)
             {
                 add_child(node, identifier());
@@ -240,6 +287,7 @@ Node *nested()
 Node *assignment()
 {
     Node *node = logical_or();
+
     while (tokens[pos].type == OPERATOR && (strcmp(tokens[pos].value, "=") == 0))
     {
         Node *op_node = match("=");
@@ -255,6 +303,7 @@ Node *assignment()
 Node *logical_or()
 {
     Node *node = logical_and();
+
     while (tokens[pos].type == OPERATOR && strcmp(tokens[pos].value, "||") == 0)
     {
         Node *op_node = match("||");
@@ -270,6 +319,7 @@ Node *logical_or()
 Node *logical_and()
 {
     Node *node = equality();
+
     while (tokens[pos].type == OPERATOR && strcmp(tokens[pos].value, "&&") == 0)
     {
         Node *op_node = match("&&");
@@ -285,9 +335,11 @@ Node *logical_and()
 Node *equality()
 {
     Node *node = comparison();
+
     while (tokens[pos].type == OPERATOR && (strcmp(tokens[pos].value, "==") == 0 || strcmp(tokens[pos].value, "!=") == 0))
     {
         Node *op_node;
+
         if (strcmp(tokens[pos].value, "==") == 0)
         {
             op_node = match("==");
@@ -310,6 +362,7 @@ Node *equality()
 Node *comparison()
 {
     Node *node = term();
+
     while (tokens[pos].type == OPERATOR && (strcmp(tokens[pos].value, ">") == 0 || strcmp(tokens[pos].value, "<") == 0 ||
                                             strcmp(tokens[pos].value, ">=") == 0 || strcmp(tokens[pos].value, "<=") == 0))
     {
@@ -346,6 +399,7 @@ Node *comparison()
 Node *term()
 {
     Node *node = factor();
+
     while (tokens[pos].type == OPERATOR && (strcmp(tokens[pos].value, "+") == 0 || strcmp(tokens[pos].value, "-") == 0))
     {
         Node *op_node;
@@ -370,6 +424,7 @@ Node *term()
 Node *factor()
 {
     Node *node = unary();
+
     while (tokens[pos].type == OPERATOR && (strcmp(tokens[pos].value, "*") == 0 || strcmp(tokens[pos].value, "/") == 0 || strcmp(tokens[pos].value, "%") == 0))
     {
         Node *op_node;
@@ -400,6 +455,7 @@ Node *factor()
 Node *unary()
 {
     Node *node = NULL;
+
     if (tokens[pos].type == OPERATOR && (strcmp(tokens[pos].value, "-") == 0 || strcmp(tokens[pos].value, "!") == 0))
     {
         node = new_node("UNARY EXPRESSION", NON_TERMINAL);
@@ -453,6 +509,7 @@ Node *primary()
         printf("\n🚫 Parser FAILURE!\n\n");
         exit(EXIT_FAILURE);
     }
+
     return node;
 }
 
@@ -466,6 +523,7 @@ Node *type_specifier()
         printf("\n🚫 Parser FAILURE!\n\n");
         exit(EXIT_FAILURE);
     }
+
     Node *node = new_node(tokens[pos].value, TERMINAL);
     pos++;
 
@@ -480,6 +538,7 @@ Node *identifier()
         printf("\n🚫 Parser FAILURE!\n\n");
         exit(EXIT_FAILURE);
     }
+
     Node *node = new_node(tokens[pos].value, TERMINAL);
     pos++;
 
@@ -494,6 +553,7 @@ Node *number()
         printf("\n🚫 Parser FAILURE!\n\n");
         exit(EXIT_FAILURE);
     }
+
     Node *node = new_node(tokens[pos].value, TERMINAL);
     pos++;
 
@@ -508,6 +568,7 @@ Node *string()
         printf("\n🚫 Parser FAILURE!\n\n");
         exit(EXIT_FAILURE);
     }
+
     Node *node = new_node(tokens[pos].value, TERMINAL);
     pos++;
 
@@ -522,50 +583,9 @@ Node *match(char *value)
         printf("\n🚫 Parser FAILURE!\n\n");
         exit(EXIT_FAILURE);
     }
+    
     Node *node = new_node(tokens[pos].value, TERMINAL);
     pos++;
 
     return node;
-}
-
-/* ************************************************** HELPER FUNCTIONS ******************************************/
-
-Node *new_node(char *value, Node_Type type) // function to create a new node
-{
-    Node *node = (Node *)malloc(sizeof(Node));
-    strcpy(node->value, value);
-    node->type = type;
-    node->num_children = 0;
-    return node;
-}
-
-void add_child(Node *parent, Node *child) // function to add a child to a node in the parse tree
-{
-    parent->children[parent->num_children] = child;
-    parent->num_children++;
-}
-
-void print_tree(Node *node, int depth) // function to display parse tree onto the terminal
-{
-    int i;
-
-    for (i = 0; i < depth; i++)
-    {
-        printf("  ");
-    }
-
-    if (node->type == NON_TERMINAL)
-    {
-        printf("\033[32m%s\033[0m\n", node->value); // non-terminals are displayed in color green
-    }
-    else
-    {
-        printf("\033[34m%s\033[0m\n", node->value); // terminals in color blue
-    }
-
-    for (i = 0; i < node->num_children; i++)
-    {
-        printf("\n");
-        print_tree(node->children[i], depth + 1);
-    }
 }

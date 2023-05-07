@@ -6,6 +6,7 @@ int main()
     int result;
 
     // ********************************* LEXER ****************************************
+
     puts("\n🕑 Starting Lexical Analysis\n..................................");
     clock_t start_scanner, end_scanner;
     double scanner_cpu_time_used;
@@ -30,6 +31,7 @@ int main()
     }
 
     // ********************************* PARSER **************************************
+    
     if (result == EXIT_FAILURE) // if the scanner failed the parser will not be called
     {
         return 1;
