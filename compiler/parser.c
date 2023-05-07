@@ -556,11 +556,11 @@ void print_tree(Node *node, int depth) // function to display parse tree onto th
 
     if (node->type == NON_TERMINAL)
     {
-        printf("\033[32m%s\033[0m\n", node->value);
+        printf("\033[32m%s\033[0m\n", node->value); // non-terminals are displayed in color green
     }
     else
     {
-        printf("\033[34m%s\033[0m\n", node->value);
+        printf("\033[34m%s\033[0m\n", node->value); // terminals in color blue
     }
 
     for (i = 0; i < node->num_children; i++)
