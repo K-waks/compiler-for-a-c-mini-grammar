@@ -47,7 +47,7 @@ Node *declaration()
     }
     else
     {
-        printf("\n\n❌ Syntax ERROR! Expected declaration. (Note: Statements should not be written globally but inside funtions.)\n\n");
+        printf("\n❌ Syntax ERROR! Expected declaration. (Note: Statements should not be written globally but inside funtions.)\n\n");
         printf("\n🚫 Parser FAILURE!\n\n");
         exit(EXIT_FAILURE);
     }
@@ -417,7 +417,7 @@ Node *type_specifier()
 {
     if (!(strcmp(tokens[pos].value, "int") == 0 || strcmp(tokens[pos].value, "void") == 0 || strcmp(tokens[pos].value, "char") == 0 || strcmp(tokens[pos].value, "float") == 0))
     {
-        printf("\n\n❌ Syntax ERROR! Expected type-specifier\n\n");
+        printf("❌ Syntax ERROR! Expected type-specifier\n\n");
         printf("\n🚫 Parser FAILURE!\n\n");
         exit(EXIT_FAILURE);
     }
@@ -435,7 +435,7 @@ Node *identifier()
         printf("\n🚫 Parser FAILURE!\n\n");
         exit(EXIT_FAILURE);
     }
-   Node *node = new_node(tokens[pos].value);
+    Node *node = new_node(tokens[pos].value);
     pos++;
 
     return node;
