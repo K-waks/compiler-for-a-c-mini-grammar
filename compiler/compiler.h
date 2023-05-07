@@ -61,7 +61,6 @@ Node *term();
 Node *factor();
 Node *unary();
 Node *nested();
-Node *list();
 Node *primary();
 Node *type_specifier();
 Node *identifier();

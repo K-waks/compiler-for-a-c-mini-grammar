@@ -10,7 +10,6 @@ int sum(int n)
     }
 }
 
-
 int main()
 {
     int n;
@@ -21,4 +20,3 @@ int main()
 }
 
 // if (232 a3 >= "ast" || 23.5 <= 90.s3) do {a2 = 89}
-
