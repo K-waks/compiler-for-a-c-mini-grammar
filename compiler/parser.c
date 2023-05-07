@@ -8,7 +8,7 @@ Node *root; // root node
 
 int parser() // entry point for the parser functions
 {
-    root = new_node("PROGRAM");
+    root = new_node("PROGRAM", NON_TERMINAL);
 
     while (tokens[pos].type != EOF)
     {
@@ -48,7 +48,7 @@ Node *declaration()
 
 Node *variable_declaration()
 {
-    Node *node = new_node("VARIABLE DECLARATION");
+    Node *node = new_node("VARIABLE DECLARATION", NON_TERMINAL);
 
     add_child(node, type_specifier()); // consume int, float, char or void and go to the next token
     add_child(node, identifier());     // consume identifier and go to the next token;
@@ -59,7 +59,7 @@ Node *variable_declaration()
 
 Node *function_declaration()
 {
-    Node *node = new_node("FUNCTION DECLARATION");
+    Node *node = new_node("FUNCTION DECLARATION", NON_TERMINAL);
 
     add_child(node, type_specifier()); // consume int, float, char or void and go to the next token
     add_child(node, identifier());     // consume identifier and go to the next token
@@ -78,7 +78,7 @@ Node *function_declaration()
 
 Node *parameter_declaration()
 {
-    Node *node = new_node("PARAMETER DECLARATION");
+    Node *node = new_node("PARAMETER DECLARATION", NON_TERMINAL);
 
     add_child(node, type_specifier()); // consume int, char or float and go to the next token
     add_child(node, identifier());     // consume identifier and go to the next token
@@ -95,7 +95,7 @@ Node *parameter_declaration()
 
 Node *block()
 {
-    Node *node = new_node("BLOCK");
+    Node *node = new_node("BLOCK", NON_TERMINAL);
 
     add_child(node, match("{")); // consume '{' and go to the next token
 
@@ -140,7 +140,7 @@ Node *statement()
 
 Node *if_statement()
 {
-    Node *node = new_node("IF STATEMENT");
+    Node *node = new_node("IF STATEMENT", NON_TERMINAL);
 
     add_child(node, match("if")); // consume 'if' and go to the next token
     add_child(node, match("("));  // consume '(' and go to the next token
@@ -159,7 +159,7 @@ Node *if_statement()
 
 Node *while_statement()
 {
-    Node *node = new_node("WHILE STATEMENT");
+    Node *node = new_node("WHILE STATEMENT", NON_TERMINAL);
 
     add_child(node, match("while")); // consume 'while' and go to the next token
     add_child(node, match("("));     // consume '(' and go to the next token
@@ -172,7 +172,7 @@ Node *while_statement()
 
 Node *expression_statement()
 {
-    Node *node = new_node("EXPRESSION STATEMENT");
+    Node *node = new_node("EXPRESSION STATEMENT", NON_TERMINAL);
 
     add_child(node, expression());
     add_child(node, match(";")); // consume ';' and go to the next token
@@ -182,7 +182,7 @@ Node *expression_statement()
 
 Node *return_statement()
 {
-    Node *node = new_node("RETURN STATEMENT");
+    Node *node = new_node("RETURN STATEMENT", NON_TERMINAL);
 
     add_child(node, match("return")); // consume return and go to the next token
 
@@ -213,12 +213,12 @@ Node *expression()
 
 Node *nested()
 {
-    Node *node = logical_or();
+    Node *node = assignment();
 
     if (tokens[pos].type == SYMBOL && strcmp(tokens[pos].value, "(") == 0)
     {
         add_child(node, match("("));
-        add_child(node, logical_or());
+        add_child(node, assignment());
 
         while (strcmp(tokens[pos].value, ",") == 0)
         {
@@ -236,14 +236,31 @@ Node *nested()
     return node;
 }
 
+// assignment operation
+Node *assignment()
+{
+    Node *node = logical_or();
+    while (tokens[pos].type == OPERATOR && (strcmp(tokens[pos].value, "=") == 0))
+    {
+        Node *op_node = match("=");
+        add_child(op_node, node);
+        add_child(op_node, logical_or());
+        node = op_node;
+    }
+
+    return node;
+}
+
 // logical OR operation
 Node *logical_or()
 {
     Node *node = logical_and();
     while (tokens[pos].type == OPERATOR && strcmp(tokens[pos].value, "||") == 0)
     {
-        add_child(node, match("||")); // consume '||' and go to the next token
-        add_child(node, logical_and());
+        Node *op_node = match("||");
+        add_child(op_node, node);
+        add_child(op_node, logical_and());
+        node = op_node;
     }
 
     return node;
@@ -255,8 +272,10 @@ Node *logical_and()
     Node *node = equality();
     while (tokens[pos].type == OPERATOR && strcmp(tokens[pos].value, "&&") == 0)
     {
-        add_child(node, match("&&")); // consume '&&' and go to the next token
-        add_child(node, equality());
+        Node *op_node = match("&&");
+        add_child(op_node, node);
+        add_child(op_node, equality());
+        node = op_node;
     }
 
     return node;
@@ -268,12 +287,20 @@ Node *equality()
     Node *node = comparison();
     while (tokens[pos].type == OPERATOR && (strcmp(tokens[pos].value, "==") == 0 || strcmp(tokens[pos].value, "!=") == 0))
     {
+        Node *op_node;
         if (strcmp(tokens[pos].value, "==") == 0)
-            add_child(node, match("==")); // consume '==' and go to the next token
+        {
+            op_node = match("==");
+            add_child(op_node, node);
+        }
         else if (strcmp(tokens[pos].value, "!=") == 0)
-            add_child(node, match("!=")); // consume '!=' and go to the next token
+        {
+            op_node = match("!=");
+            add_child(op_node, node);
+        }
 
-        add_child(node, comparison());
+        add_child(op_node, comparison());
+        node = op_node;
     }
 
     return node;
@@ -282,33 +309,34 @@ Node *equality()
 // comparison operator
 Node *comparison()
 {
-    Node *node = assignment();
+    Node *node = term();
     while (tokens[pos].type == OPERATOR && (strcmp(tokens[pos].value, ">") == 0 || strcmp(tokens[pos].value, "<") == 0 ||
                                             strcmp(tokens[pos].value, ">=") == 0 || strcmp(tokens[pos].value, "<=") == 0))
     {
+        Node *op_node;
         if (strcmp(tokens[pos].value, ">") == 0)
-            add_child(node, match(">")); // consume '>' and go to the next token
+        {
+            op_node = match(">");
+            add_child(op_node, node);
+        }
         else if (strcmp(tokens[pos].value, "<") == 0)
-            add_child(node, match("<")); // consume '<' and go to the next token
+        {
+            op_node = match("<");
+            add_child(op_node, node);
+        }
         else if (strcmp(tokens[pos].value, ">=") == 0)
-            add_child(node, match(">=")); // consume '>=' and go to the next token
+        {
+            op_node = match(">=");
+            add_child(op_node, node);
+        }
         else if (strcmp(tokens[pos].value, "<=") == 0)
-            add_child(node, match("<=")); // consume '<=' and go to the next token
+        {
+            op_node = match("<=");
+            add_child(op_node, node);
+        }
 
-        add_child(node, assignment());
-    }
-
-    return node;
-}
-
-// assignment operation
-Node *assignment()
-{
-    Node *node = term();
-    while (tokens[pos].type == OPERATOR && (strcmp(tokens[pos].value, "=") == 0))
-    {
-        add_child(node, match("=")); // consume '=' and go to the next token
-        add_child(node, term());
+        add_child(op_node, term());
+        node = op_node;
     }
 
     return node;
@@ -320,12 +348,19 @@ Node *term()
     Node *node = factor();
     while (tokens[pos].type == OPERATOR && (strcmp(tokens[pos].value, "+") == 0 || strcmp(tokens[pos].value, "-") == 0))
     {
+        Node *op_node;
         if (strcmp(tokens[pos].value, "+") == 0)
-            add_child(node, match("+")); // consume '+' and go to the next token
+        {
+            op_node = match("+");
+            add_child(op_node, node);
+        }
         else if (strcmp(tokens[pos].value, "-") == 0)
-            add_child(node, match("-")); // consume '-' and go to the next token
-
-        add_child(node, factor());
+        {
+            op_node = match("-");
+            add_child(op_node, node);
+        }
+        add_child(op_node, factor());
+        node = op_node;
     }
 
     return node;
@@ -337,14 +372,25 @@ Node *factor()
     Node *node = unary();
     while (tokens[pos].type == OPERATOR && (strcmp(tokens[pos].value, "*") == 0 || strcmp(tokens[pos].value, "/") == 0 || strcmp(tokens[pos].value, "%") == 0))
     {
+        Node *op_node;
         if (strcmp(tokens[pos].value, "*") == 0)
-            add_child(node, match("*")); // consume '*' and go to the next token
+        {
+            op_node = match("*");
+            add_child(op_node, node);
+        }
         else if (strcmp(tokens[pos].value, "/") == 0)
-            add_child(node, match("/")); // consume '/' and go to the next token
+        {
+            op_node = match("/");
+            add_child(op_node, node);
+        }
         else if (strcmp(tokens[pos].value, "%") == 0)
-            add_child(node, match("%")); // consume '%' and go to the next token
+        {
+            op_node = match("%");
+            add_child(op_node, node);
+        }
 
-        add_child(node, unary());
+        add_child(op_node, unary());
+        node = op_node;
     }
 
     return node;
@@ -356,12 +402,16 @@ Node *unary()
     Node *node = NULL;
     if (tokens[pos].type == OPERATOR && (strcmp(tokens[pos].value, "-") == 0 || strcmp(tokens[pos].value, "!") == 0))
     {
-        node = new_node("UNARY EXPRESSION");
+        node = new_node("UNARY EXPRESSION", NON_TERMINAL);
         if (strcmp(tokens[pos].value, "-") == 0)
+        {
             add_child(node, match("-")); // consume '-' and go to the next token
-        else if (strcmp(tokens[pos].value, "!") == 0)
-            add_child(node, match("!")); // consume '!' and go to the next token
+        }
 
+        else if (strcmp(tokens[pos].value, "!") == 0)
+        {
+            add_child(node, match("!")); // consume '!' and go to the next token
+        }
         add_child(node, primary());
     }
     else
@@ -416,7 +466,7 @@ Node *type_specifier()
         printf("\n🚫 Parser FAILURE!\n\n");
         exit(EXIT_FAILURE);
     }
-    Node *node = new_node(tokens[pos].value);
+    Node *node = new_node(tokens[pos].value, TERMINAL);
     pos++;
 
     return node;
@@ -430,7 +480,7 @@ Node *identifier()
         printf("\n🚫 Parser FAILURE!\n\n");
         exit(EXIT_FAILURE);
     }
-    Node *node = new_node(tokens[pos].value);
+    Node *node = new_node(tokens[pos].value, TERMINAL);
     pos++;
 
     return node;
@@ -444,7 +494,7 @@ Node *number()
         printf("\n🚫 Parser FAILURE!\n\n");
         exit(EXIT_FAILURE);
     }
-    Node *node = new_node(tokens[pos].value);
+    Node *node = new_node(tokens[pos].value, TERMINAL);
     pos++;
 
     return node;
@@ -458,7 +508,7 @@ Node *string()
         printf("\n🚫 Parser FAILURE!\n\n");
         exit(EXIT_FAILURE);
     }
-    Node *node = new_node(tokens[pos].value);
+    Node *node = new_node(tokens[pos].value, TERMINAL);
     pos++;
 
     return node;
@@ -472,7 +522,7 @@ Node *match(char *value)
         printf("\n🚫 Parser FAILURE!\n\n");
         exit(EXIT_FAILURE);
     }
-    Node *node = new_node(tokens[pos].value);
+    Node *node = new_node(tokens[pos].value, TERMINAL);
     pos++;
 
     return node;
@@ -480,10 +530,11 @@ Node *match(char *value)
 
 /* ************************************************** HELPER FUNCTIONS ******************************************/
 
-Node *new_node(char *value) // function to create a new node
+Node *new_node(char *value, Node_Type type) // function to create a new node
 {
     Node *node = (Node *)malloc(sizeof(Node));
     strcpy(node->value, value);
+    node->type = type;
     node->num_children = 0;
     return node;
 }
@@ -503,7 +554,14 @@ void print_tree(Node *node, int depth) // function to display parse tree onto th
         printf("  ");
     }
 
-    printf("%s", node->value);
+    if (node->type == NON_TERMINAL)
+    {
+        printf("\033[32m%s\033[0m\n", node->value);
+    }
+    else
+    {
+        printf("\033[34m%s\033[0m\n", node->value);
+    }
 
     for (i = 0; i < node->num_children; i++)
     {

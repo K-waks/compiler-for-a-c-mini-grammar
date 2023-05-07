@@ -31,9 +31,17 @@ typedef struct
 // array of data type struct Token that stores a max of 1000 tokens (struct Token instances)
 Token tokens[1000];
 
+// enumerations for node type to aid in displaying them in their correct color in the terminal
+typedef enum
+{
+    NON_TERMINAL,
+    TERMINAL
+} Node_Type;
+
 // struct to store the parse tree
 typedef struct node
 {
+    Node_Type type;
     char value[256];
     struct node *children[10];
     int num_children;
@@ -67,7 +75,7 @@ Node *identifier();
 Node *number();
 Node *string();
 Node *match(char *value);
-Node *new_node(char *value);
+Node *new_node(char *value, Node_Type type);
 void add_child(Node *parent, Node *child);
 void print_tree(Node *node, int depth);
 
