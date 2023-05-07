@@ -114,7 +114,7 @@ Token_Type get_token(FILE *fp, char *buffer)
     return EOF;
 }
 
-int lexer()
+void lexer()
 {
     // file descriptor variable declared and buffer of dynamic size to hold the read characters
     FILE *fp;
@@ -126,15 +126,14 @@ int lexer()
     if (fp == NULL)
     {
         printf("\n\n❌ Lexer ERROR! Can't open file for scanning.\n\n");
-        return EXIT_FAILURE;
+        exit(EXIT_FAILURE);
     }
     else if ((c = fgetc(fp)) == EOF)
     {
         printf("\n\n❌ Lexer ERROR! File is empty.\n\n");
-        return EXIT_FAILURE;
+        exit(EXIT_FAILURE);
     }
     ungetc(c, fp);
-    
 
     // saving each token to the struct array while printing to the terminal
     Token_Type token_type;
@@ -144,37 +143,39 @@ int lexer()
     {
         if (token_type == INVALID_TOKEN)
         {
-            return EXIT_FAILURE;
+            exit(EXIT_FAILURE);
         }
-
-        // printing to the terminal
-        switch (token_type)
+        else
         {
-        case KEYWORD:
-            printf("KEYWORD: %s\n", buffer);
-            break;
-        case IDENTIFIER:
-            printf("IDENTIFIER: %s\n", buffer);
-            break;
-        case NUMBER:
-            printf("NUMBER: %s\n", buffer);
-            break;
-        case STRING:
-            printf("STRING: %s\n", buffer);
-            break;
-        case OPERATOR:
-            printf("OPERATOR: %s\n", buffer);
-            break;
-        case SYMBOL:
-            printf("SYMBOL: %s\n", buffer);
-            break;
-        default:
-            break;
+            // printing to the terminal
+            switch (token_type)
+            {
+            case KEYWORD:
+                printf("KEYWORD: %s\n", buffer);
+                break;
+            case IDENTIFIER:
+                printf("IDENTIFIER: %s\n", buffer);
+                break;
+            case NUMBER:
+                printf("NUMBER: %s\n", buffer);
+                break;
+            case STRING:
+                printf("STRING: %s\n", buffer);
+                break;
+            case OPERATOR:
+                printf("OPERATOR: %s\n", buffer);
+                break;
+            case SYMBOL:
+                printf("SYMBOL: %s\n", buffer);
+                break;
+            default:
+                break;
+            }
+            Token current_tkn;
+            current_tkn.type = token_type;
+            strcpy(current_tkn.value, buffer);
+            tokens[token_count++] = current_tkn; // adding the token (struct) to our array of structs.
         }
-        Token current_tkn;
-        current_tkn.type = token_type;
-        strcpy(current_tkn.value, buffer);
-        tokens[token_count++] = current_tkn; // adding the token (struct) to our array of structs.
     }
 
     // adding the terminating symbol to the end of the array that will be used to tell the parser that we've reached the end of parsing
@@ -185,6 +186,4 @@ int lexer()
 
     // closing the file
     fclose(fp);
-
-    return EXIT_SUCCESS;
 }

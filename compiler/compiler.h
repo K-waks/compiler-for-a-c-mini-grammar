@@ -42,13 +42,20 @@ typedef enum
 typedef struct node
 {
     Node_Type type;
-    char value[256];
+    char *value;
     struct node *children[10];
     int num_children;
 } Node;
- 
+
+// root node
+Node *root_node;
+
 // function prototypes for recursive descent functions in parser.c
-int parser();
+Node *new_node(char *value, Node_Type type);
+void add_child(Node *parent, Node *child);
+void print_tree(Node *node, int depth);
+
+void parser();
 Node *declaration();
 Node *variable_declaration();
 Node *function_declaration();
@@ -75,8 +82,9 @@ Node *identifier();
 Node *number();
 Node *string();
 Node *match(char *value);
-Node *new_node(char *value, Node_Type type);
-void add_child(Node *parent, Node *child);
-void print_tree(Node *node, int depth);
+
+
+char *new_temp();
+void generate_code(Node *node);
 
 #endif

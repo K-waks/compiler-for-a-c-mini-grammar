@@ -2,14 +2,12 @@
 
 int pos = 0; // indexes the tokens.
 
-Node *root; // root node
-
-/* ************************************************** HELPER FUNCTIONS ******************************************/
+/* ********************************** HELPER FUNCTIONS ******************************************/
 
 Node *new_node(char *value, Node_Type type) // function to create a new node
 {
     Node *node = (Node *)malloc(sizeof(Node));
-    strcpy(node->value, value);
+    node->value = value;
     node->type = type;
     node->num_children = 0;
     return node;
@@ -27,7 +25,7 @@ void print_tree(Node *node, int depth) // function to display parse tree onto th
 
     for (i = 0; i < depth; i++)
     {
-        printf("  ");
+        printf("    ");
     }
 
     if (node->type == NON_TERMINAL)
@@ -46,27 +44,33 @@ void print_tree(Node *node, int depth) // function to display parse tree onto th
     }
 }
 
-/* **********************************************PARSER FUNCTIONS ******************************************************/
+/* *********************************** PARSER FUNCTIONS *****************************************/
 
-int parser() // entry point for the parser functions
+// entry point for the parser functions
+// ---------------------------------------------
+
+void parser()
 {
-    root = new_node("PROGRAM", NON_TERMINAL);
+    root_node = new_node("PROGRAM", NON_TERMINAL);
 
     while (tokens[pos].type != EOF)
     {
-        add_child(root, declaration());
+        add_child(root_node, declaration());
     }
 
-    if (tokens[pos].type == EOF)
+    if (tokens[pos].type != EOF)
     {
-        print_tree(root, 0);
-        return EXIT_SUCCESS;
+        puts("⛔ PARSER MALFUNCTION! Failed to scan all tokens.\n");
+        exit(EXIT_FAILURE);
     }
     else
     {
-        return EXIT_FAILURE;
+        print_tree(root_node, 0);
     }
 }
+
+// Declarations
+// ---------------------------------------------
 
 Node *declaration()
 {
@@ -82,8 +86,7 @@ Node *declaration()
     }
     else
     {
-        printf("\n❌ Syntax ERROR! Expected declaration. (Note: Statements should not be written globally but inside funtions.)\n\n");
-        printf("\n🚫 Parser FAILURE!\n\n");
+        puts("⛔ SYNTAX ERROR! Expected declaration. (Note: Statements should not be written globally but inside funtions.)\n");
         exit(EXIT_FAILURE);
     }
 
@@ -157,6 +160,9 @@ Node *block()
 
     return node;
 }
+
+// Statements
+// ---------------------------------------------
 
 Node *statement()
 {
@@ -248,7 +254,7 @@ Node *return_statement()
     return node;
 }
 
-// Building Expressions recursively
+// Expressions
 // ---------------------------------------------
 
 Node *expression()
@@ -283,7 +289,6 @@ Node *nested()
     return node;
 }
 
-// assignment operation
 Node *assignment()
 {
     Node *node = logical_or();
@@ -299,7 +304,6 @@ Node *assignment()
     return node;
 }
 
-// logical OR operation
 Node *logical_or()
 {
     Node *node = logical_and();
@@ -315,7 +319,6 @@ Node *logical_or()
     return node;
 }
 
-// logical AND operation
 Node *logical_and()
 {
     Node *node = equality();
@@ -331,7 +334,6 @@ Node *logical_and()
     return node;
 }
 
-// equality operator
 Node *equality()
 {
     Node *node = comparison();
@@ -358,7 +360,6 @@ Node *equality()
     return node;
 }
 
-// comparison operator
 Node *comparison()
 {
     Node *node = term();
@@ -395,7 +396,6 @@ Node *comparison()
     return node;
 }
 
-// term operation
 Node *term()
 {
     Node *node = factor();
@@ -420,7 +420,6 @@ Node *term()
     return node;
 }
 
-// factor operation
 Node *factor()
 {
     Node *node = unary();
@@ -451,7 +450,6 @@ Node *factor()
     return node;
 }
 
-// unary operation
 Node *unary()
 {
     Node *node = NULL;
@@ -476,7 +474,6 @@ Node *unary()
     return node;
 }
 
-// primary operation
 Node *primary()
 {
     Node *node = NULL;
@@ -505,22 +502,21 @@ Node *primary()
     }
     else
     {
-        printf("\n\n❌ Syntax ERROR! Invalid token: %s\n\n", tokens[pos].value);
-        printf("\n🚫 Parser FAILURE!\n\n");
+        printf("⛔ SYNTAX ERROR! Unexpected token: %s\n\n", tokens[pos].value);
         exit(EXIT_FAILURE);
     }
 
     return node;
 }
 
+// Match functions
 // ---------------------------------------------
 
 Node *type_specifier()
 {
     if (!(strcmp(tokens[pos].value, "int") == 0 || strcmp(tokens[pos].value, "void") == 0 || strcmp(tokens[pos].value, "char") == 0 || strcmp(tokens[pos].value, "float") == 0))
     {
-        printf("\n❌ Syntax ERROR! Expected type-specifier\n\n");
-        printf("\n🚫 Parser FAILURE!\n\n");
+        printf("⛔ SYNTAX ERROR! Expected type-specifier, but got %s.\n\n", tokens[pos].value);
         exit(EXIT_FAILURE);
     }
 
@@ -534,8 +530,7 @@ Node *identifier()
 {
     if (tokens[pos].type != IDENTIFIER)
     {
-        printf("\n\n❌ Syntax ERROR! Expected identifier, but got %s.\n\n", tokens[pos].value);
-        printf("\n🚫 Parser FAILURE!\n\n");
+        printf("⛔ SYNTAX ERROR! Expected identifier, but got %s.\n\n", tokens[pos].value);
         exit(EXIT_FAILURE);
     }
 
@@ -549,8 +544,7 @@ Node *number()
 {
     if (tokens[pos].type != NUMBER)
     {
-        printf("\n\n❌ Syntax ERROR! Expected number, but got %s.\n\n", tokens[pos].value);
-        printf("\n🚫 Parser FAILURE!\n\n");
+        printf("⛔ SYNTAX ERROR! Expected number, but got %s.\n\n", tokens[pos].value);
         exit(EXIT_FAILURE);
     }
 
@@ -564,8 +558,7 @@ Node *string()
 {
     if (tokens[pos].type != STRING)
     {
-        printf("\n\n❌ Syntax ERROR! Expected string, but got %s.\n\n", tokens[pos].value);
-        printf("\n🚫 Parser FAILURE!\n\n");
+        printf("⛔ SYNTAX ERROR! Expected string, but got %s.\n\n", tokens[pos].value);
         exit(EXIT_FAILURE);
     }
 
@@ -579,11 +572,10 @@ Node *match(char *value)
 {
     if (strcmp(tokens[pos].value, value) != 0)
     {
-        printf("\n\n❌ Syntax ERROR! Expected '%s' but got '%s'\n\n", value, tokens[pos].value);
-        printf("\n🚫 Parser FAILURE!\n\n");
+        printf("⛔ SYNTAX ERROR! Expected '%s' but got '%s'\n\n", value, tokens[pos].value);
         exit(EXIT_FAILURE);
     }
-    
+
     Node *node = new_node(tokens[pos].value, TERMINAL);
     pos++;
 
