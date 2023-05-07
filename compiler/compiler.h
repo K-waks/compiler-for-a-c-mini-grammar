@@ -38,9 +38,9 @@ typedef struct node
     struct node *children[10];
     int num_children;
 } Node;
-
-// function prototypes for the parser
-Node *program();
+ 
+// function prototypes for recursive descent functions in parser.c
+int parser();
 Node *declaration();
 Node *variable_declaration();
 Node *function_declaration();

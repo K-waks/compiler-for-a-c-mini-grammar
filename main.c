@@ -1,7 +1,6 @@
 #include <time.h>
 #include "compiler/parser.c"
 
-
 int main()
 {
     int result;
@@ -35,7 +34,7 @@ int main()
     {
         return 1;
     }
-    
+
     puts("\n🕑 Starting Parsing\n..................................");
     clock_t start_parser, end_parser;
     double parser_cpu_time_used;
@@ -48,9 +47,6 @@ int main()
 
     switch (result)
     {
-    case EXIT_FAILURE:
-        printf("\n🚫 Parser FAILURE!\n\n");
-        break;
     case EXIT_SUCCESS:
         printf("\n✅ Parsing successful. Execution time: %f seconds\n\n", parser_cpu_time_used);
         break;

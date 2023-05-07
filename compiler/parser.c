@@ -2,35 +2,26 @@
 
 int pos = 0; // indexes the tokens.
 
+Node *root; // root node
+
+/* **********************************************PARSER FUNCTIONS ******************************************************/
+
 int parser() // entry point for the parser functions
 {
+    root = new_node("PROGRAM");
 
-    Node *root = program();
+    while (tokens[pos].type != EOF)
+    {
+        add_child(root, declaration());
+    }
 
     if (tokens[pos].type == EOF)
     {
         print_tree(root, 0);
-
         return EXIT_SUCCESS;
     }
     else
-    {
         return EXIT_FAILURE;
-    }
-}
-
-/* **********************************************PARSER FUNCTIONS ******************************************************/
-
-Node *program()
-{
-    Node *node = new_node("PROGRAM");
-
-    while (tokens[pos].type != EOF)
-    {
-        add_child(node, declaration());
-    }
-
-    return node;
 }
 
 Node *declaration()
@@ -353,7 +344,7 @@ Node *factor()
         else if (strcmp(tokens[pos].value, "%") == 0)
             add_child(node, match("%")); // consume '%' and go to the next token
 
-        Node *node = unary();
+        add_child(node, unary());
     }
 
     return node;
@@ -363,10 +354,14 @@ Node *factor()
 Node *unary()
 {
     Node *node = NULL;
-    if (tokens[pos].type == OPERATOR && (strcmp(tokens[pos].value, "+") == 0 || strcmp(tokens[pos].value, "-") == 0 || strcmp(tokens[pos].value, "!") == 0))
+    if (tokens[pos].type == OPERATOR && (strcmp(tokens[pos].value, "-") == 0 || strcmp(tokens[pos].value, "!") == 0))
     {
         node = new_node("UNARY EXPRESSION");
-        add_child(node, match(tokens[pos].value)); // consume either '+', '-' or '!' and go to the next token
+        if (strcmp(tokens[pos].value, "-") == 0)
+            add_child(node, match("-")); // consume '-' and go to the next token
+        else if (strcmp(tokens[pos].value, "!") == 0)
+            add_child(node, match("!")); // consume '!' and go to the next token
+
         add_child(node, primary());
     }
     else
@@ -417,7 +412,7 @@ Node *type_specifier()
 {
     if (!(strcmp(tokens[pos].value, "int") == 0 || strcmp(tokens[pos].value, "void") == 0 || strcmp(tokens[pos].value, "char") == 0 || strcmp(tokens[pos].value, "float") == 0))
     {
-        printf("❌ Syntax ERROR! Expected type-specifier\n\n");
+        printf("\n❌ Syntax ERROR! Expected type-specifier\n\n");
         printf("\n🚫 Parser FAILURE!\n\n");
         exit(EXIT_FAILURE);
     }
@@ -471,19 +466,14 @@ Node *string()
 
 Node *match(char *value)
 {
-    Node *node = NULL;
-
     if (strcmp(tokens[pos].value, value) != 0)
     {
         printf("\n\n❌ Syntax ERROR! Expected '%s' but got '%s'\n\n", value, tokens[pos].value);
         printf("\n🚫 Parser FAILURE!\n\n");
         exit(EXIT_FAILURE);
     }
-    else
-    {
-        node = new_node(tokens[pos].value);
-        pos++;
-    }
+    Node *node = new_node(tokens[pos].value);
+    pos++;
 
     return node;
 }
