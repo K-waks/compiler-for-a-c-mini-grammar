@@ -29,13 +29,20 @@ void generate_code(Node *node)
     else if (strcmp(node->value, "FUNCTION DECLARATION") == 0)
     { // int sum(){} 
         printf("%s:\n", node->children[1]->value); // Print function label
-        generate_code(node->children[3]);          // Generate code for block
+        for (int i = 0; i < 10; i++)
+        {
+            if (strcmp(node->children[i]->value, "BLOCK") == 0)
+            {
+                generate_code(node->children[i]);
+                break;
+            }
+            
+        }
         printf("RETURN\n");                        // Return from function
     }
 
     else if (strcmp(node->value, "BLOCK") == 0)
     {
-        // Generate code for block
         for (int i = 1; i < node->num_children - 1; i++)
         {
             generate_code(node->children[i]);
