@@ -34,7 +34,15 @@ Token tokens[1000];
 // enumerations for node type to aid in displaying them in their correct color in the terminal
 typedef enum
 {
-    NON_TERMINAL,
+    PROGRAM,
+    VARIABLE_DECLARATION,
+    FUNCTION_DECLARATION,
+    PARAMETER_DECLARATION,
+    BLOCK,
+    IF_STATEMENT,
+    WHILE_STATEMENT,
+    RETURN_STATEMENT,
+    EXPRESSION_STATEMENT,
     TERMINAL
 } Node_Type;
 
@@ -53,7 +61,7 @@ Node *root_node;
 // function prototypes for recursive descent functions in parser.c
 Node *new_node(char *value, Node_Type type);
 void add_child(Node *parent, Node *child);
-void print_tree(Node *node, int depth);
+void print_tree(Node *node, int depth, int index);
 
 void parser();
 Node *declaration();
@@ -82,7 +90,6 @@ Node *identifier();
 Node *number();
 Node *string();
 Node *match(char *value);
-
 
 char *new_temp();
 void generate_code(Node *node);

@@ -7,9 +7,10 @@ int pos = 0; // indexes the tokens.
 Node *new_node(char *value, Node_Type type) // function to create a new node
 {
     Node *node = (Node *)malloc(sizeof(Node));
-    node->value = value;
     node->type = type;
     node->num_children = 0;
+    node->value = value;
+
     return node;
 }
 
@@ -19,28 +20,22 @@ void add_child(Node *parent, Node *child) // function to add a child to a node i
     parent->num_children++;
 }
 
-void print_tree(Node *node, int depth) // function to display parse tree onto the terminal
+void print_tree(Node *node, int depth, int index) // updated to include an integer variable index that tracks the index of the child
 {
     int i;
-
     for (i = 0; i < depth; i++)
     {
         printf("    ");
     }
 
-    if (node->type == NON_TERMINAL)
-    {
-        printf("\033[32m%s\033[0m\n", node->value); // non-terminals are displayed in color green
-    }
+    if (node->type == TERMINAL)
+        printf("\033[32m (%d.%d) %s \033[0m\n", depth, index, node->value);
     else
-    {
-        printf("\033[34m%s\033[0m\n", node->value); // terminals in color blue
-    }
+        printf("\033[34m (%d.%d) %s \033[0m\n", depth, index, node->value);
 
     for (i = 0; i < node->num_children; i++)
     {
-        printf("\n");
-        print_tree(node->children[i], depth + 1);
+        print_tree(node->children[i], depth + 1, i); // pass the index of the child to the recursive call
     }
 }
 
@@ -51,7 +46,7 @@ void print_tree(Node *node, int depth) // function to display parse tree onto th
 
 void parser()
 {
-    root_node = new_node("PROGRAM", NON_TERMINAL);
+    root_node = new_node("PROGRAM", PROGRAM);
 
     while (tokens[pos].type != EOF)
     {
@@ -65,7 +60,7 @@ void parser()
     }
     else
     {
-        print_tree(root_node, 0);
+        print_tree(root_node, 0, 0);
     }
 }
 
@@ -95,7 +90,7 @@ Node *declaration()
 
 Node *variable_declaration()
 {
-    Node *node = new_node("VARIABLE DECLARATION", NON_TERMINAL);
+    Node *node = new_node("VARIABLE DECLARATION", VARIABLE_DECLARATION);
 
     add_child(node, type_specifier()); // consume int, float, char or void and go to the next token
     add_child(node, identifier());     // consume identifier and go to the next token;
@@ -106,7 +101,7 @@ Node *variable_declaration()
 
 Node *function_declaration()
 {
-    Node *node = new_node("FUNCTION DECLARATION", NON_TERMINAL);
+    Node *node = new_node("FUNCTION DECLARATION", FUNCTION_DECLARATION);
 
     add_child(node, type_specifier()); // consume int, float, char or void and go to the next token
     add_child(node, identifier());     // consume identifier and go to the next token
@@ -125,7 +120,7 @@ Node *function_declaration()
 
 Node *parameter_declaration()
 {
-    Node *node = new_node("PARAMETER DECLARATION", NON_TERMINAL);
+    Node *node = new_node("PARAMETER DECLARATION", PARAMETER_DECLARATION);
 
     add_child(node, type_specifier()); // consume int, char or float and go to the next token
     add_child(node, identifier());     // consume identifier and go to the next token
@@ -142,7 +137,7 @@ Node *parameter_declaration()
 
 Node *block()
 {
-    Node *node = new_node("BLOCK", NON_TERMINAL);
+    Node *node = new_node("BLOCK", BLOCK);
 
     add_child(node, match("{")); // consume '{' and go to the next token
 
@@ -190,26 +185,22 @@ Node *statement()
 
 Node *if_statement()
 {
-    Node *node = new_node("IF STATEMENT", NON_TERMINAL);
+    Node *node = new_node("IF STATEMENT", IF_STATEMENT);
 
     add_child(node, match("if")); // consume 'if' and go to the next token
     add_child(node, match("("));  // consume '(' and go to the next token
     add_child(node, expression());
     add_child(node, match(")")); // consume ')' and go to the next token
     add_child(node, block());
-
-    if (tokens[pos].type == KEYWORD && strcmp(tokens[pos].value, "else") == 0)
-    {
-        add_child(node, match("else")); // consume 'else' and go to the next token
-        add_child(node, block());
-    }
+    add_child(node, match("else")); // consume 'else' and go to the next token
+    add_child(node, block());
 
     return node;
 }
 
 Node *while_statement()
 {
-    Node *node = new_node("WHILE STATEMENT", NON_TERMINAL);
+    Node *node = new_node("WHILE STATEMENT", WHILE_STATEMENT);
 
     add_child(node, match("while")); // consume 'while' and go to the next token
     add_child(node, match("("));     // consume '(' and go to the next token
@@ -222,7 +213,7 @@ Node *while_statement()
 
 Node *expression_statement()
 {
-    Node *node = new_node("EXPRESSION STATEMENT", NON_TERMINAL);
+    Node *node = new_node("EXPRESSION STATEMENT", EXPRESSION_STATEMENT);
 
     add_child(node, expression());
     add_child(node, match(";")); // consume ';' and go to the next token
@@ -232,7 +223,7 @@ Node *expression_statement()
 
 Node *return_statement()
 {
-    Node *node = new_node("RETURN STATEMENT", NON_TERMINAL);
+    Node *node = new_node("RETURN STATEMENT", RETURN_STATEMENT);
 
     add_child(node, match("return")); // consume return and go to the next token
 
@@ -456,7 +447,7 @@ Node *unary()
 
     if (tokens[pos].type == OPERATOR && (strcmp(tokens[pos].value, "-") == 0 || strcmp(tokens[pos].value, "!") == 0))
     {
-        node = new_node("UNARY EXPRESSION", NON_TERMINAL);
+        node = new_node("Unary", TERMINAL);
         if (strcmp(tokens[pos].value, "-") == 0)
         {
             add_child(node, match("-")); // consume '-' and go to the next token

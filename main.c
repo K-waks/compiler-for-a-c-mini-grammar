@@ -1,5 +1,5 @@
 #include <time.h>
-#include "compiler/three_addr_code.c"
+#include "compiler/tac.c"
 
 int main()
 {
