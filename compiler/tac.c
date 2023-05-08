@@ -4,7 +4,6 @@ int label_count = 0;
 int temp_count = 0;
 char last_temp_var[10] = "";
 
-
 int new_label()
 {
     return ++label_count;
@@ -246,22 +245,9 @@ void generate_code(Node *node)
 
     case TERMINAL:
     {
-        char temp[10];
+        sprintf(last_temp_var, "t%d", ++temp_count);            // Create new temporary variable
+        printf("ASSIGN, %s, %s\n", last_temp_var, node->value); // Assign terminal value to temporary variable
 
-        if (strcmp(node->value, "Unary") == 0)
-        {
-            generate_code(node->children[1]);
-            printf("SUB, %s, 0, %s\n", last_temp_var, last_temp()); // Negate the value and store it in the temporary variable
-
-            strcpy(temp, last_temp_var);                     // Store the temporary variable holding the negation
-            sprintf(last_temp_var, "t%d", ++temp_count);     // Create another new temporary variable
-            printf("ASSIGN, %s, %s\n", last_temp_var, temp); // Assign negation value to the latter temporary variable
-        }
-        else
-        {
-            sprintf(last_temp_var, "t%d", ++temp_count);            // Create new temporary variable
-            printf("ASSIGN, %s, %s\n", last_temp_var, node->value); // Assign terminal value to temporary variable
-        }
         break;
     }
 
