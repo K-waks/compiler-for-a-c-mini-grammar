@@ -42,7 +42,11 @@ typedef enum
     IF_STATEMENT,
     WHILE_STATEMENT,
     RETURN_STATEMENT,
-    EXPRESSION_STATEMENT,
+    PRINTF_STATEMENT,
+    SCANF_STATEMENT,
+    FUNCTION_CALL,
+    EXPRESSION,
+    UNARY,
     TERMINAL
 } Node_Type;
 
@@ -74,6 +78,9 @@ Node *if_statement();
 Node *while_statement();
 Node *return_statement();
 Node *expression_statement();
+Node * printf_statement();
+Node * scanf_statement();
+Node * function_call();
 Node *expression();
 Node *assignment();
 Node *logical_or();

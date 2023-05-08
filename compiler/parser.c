@@ -213,10 +213,82 @@ Node *while_statement()
 
 Node *expression_statement()
 {
-    Node *node = new_node("EXPRESSION STATEMENT", EXPRESSION_STATEMENT);
+    Node *node = NULL;
 
-    add_child(node, expression());
+    if (strcmp(tokens[pos].value, "printf") == 0)
+    {
+        node = printf_statement();
+    }
+    else if (strcmp(tokens[pos].value, "scanf") == 0)
+    {
+        node = scanf_statement();
+    }
+    else if (tokens[pos].type == IDENTIFIER && strcmp(tokens[pos + 1].value, "(") == 0)
+    {
+        node = function_call();
+    }
+
     add_child(node, match(";")); // consume ';' and go to the next token
+
+    return node;
+}
+
+Node *printf_statement()
+{
+    Node *node = new_node("PRINTF_STATEMENT", PRINTF_STATEMENT);
+    add_child(node, match("printf"));
+    add_child(node, match("("));
+
+    add_child(node, string());
+
+    while (strcmp(tokens[pos].value, ",") == 0)
+    {
+        add_child(node, match(","));
+
+        if (tokens[pos].type == IDENTIFIER && strcmp(tokens[pos + 1].value, "(") == 0)
+        {
+            add_child(node, function_call());
+        }
+        else
+        {
+            add_child(node, identifier());
+        }
+    }
+    add_child(node, match(")"));
+
+    return node;
+}
+
+Node *scanf_statement()
+{
+    Node *node = new_node("SCANF_STATEMENT", SCANF_STATEMENT);
+    add_child(node, match("scanf"));
+    add_child(node, match("("));
+
+    add_child(node, string());
+
+    while (strcmp(tokens[pos].value, ",") == 0)
+    {
+        add_child(node, match(","));
+        add_child(node, match("&"));
+        add_child(node, identifier());
+    }
+    add_child(node, match(")"));
+
+    return node;
+}
+
+Node *function_call()
+{
+    Node *node = new_node("FUNCTION_CALL", FUNCTION_CALL);
+    add_child(node, identifier());
+    add_child(node, match("("));
+
+    if (strcmp(tokens[pos].value, ")") != 0)
+    {
+        add_child(node, expression());
+    }
+    add_child(node, match(")"));
 
     return node;
 }
@@ -226,20 +298,9 @@ Node *return_statement()
     Node *node = new_node("RETURN STATEMENT", RETURN_STATEMENT);
 
     add_child(node, match("return")); // consume return and go to the next token
-
-    // return with brackets e.g. return (0);
-    if (strcmp(tokens[pos].value, "(") == 0)
-    {
-        add_child(node, match("(")); // consume '(' and go to the next token
-        add_child(node, expression());
-        add_child(node, match(")")); // consume ')' and go to the next token
-    }
-    // return withiout brackets e.g. return 0;
-    else
-    {
-        add_child(node, expression());
-    }
-
+    add_child(node, match("("));      // consume '(' and go to the next token
+    add_child(node, expression());
+    add_child(node, match(")")); // consume ')' and go to the next token
     add_child(node, match(";")); // consume ';' and go to the next token
 
     return node;
@@ -250,7 +311,8 @@ Node *return_statement()
 
 Node *expression()
 {
-    Node *node = nested();
+    Node *node = new_node("EXPRESSION", EXPRESSION);
+    add_child(node, nested());
     return node;
 }
 
@@ -267,11 +329,6 @@ Node *nested()
         {
             add_child(node, match(","));
             add_child(node, expression());
-
-            if (strcmp(tokens[pos - 1].value, "&") == 0)
-            {
-                add_child(node, identifier());
-            }
         }
 
         add_child(node, match(")"));
@@ -447,7 +504,7 @@ Node *unary()
 
     if (tokens[pos].type == OPERATOR && (strcmp(tokens[pos].value, "-") == 0 || strcmp(tokens[pos].value, "!") == 0))
     {
-        node = new_node("Unary", TERMINAL);
+        node = new_node("Unary", UNARY);
         if (strcmp(tokens[pos].value, "-") == 0)
         {
             add_child(node, match("-")); // consume '-' and go to the next token
@@ -460,8 +517,9 @@ Node *unary()
         add_child(node, primary());
     }
     else
+    {
         node = primary();
-
+    }
     return node;
 }
 
@@ -469,7 +527,12 @@ Node *primary()
 {
     Node *node = NULL;
 
-    if (tokens[pos].type == IDENTIFIER)
+    if (tokens[pos].type == IDENTIFIER && strcmp(tokens[pos + 1].value, "(") == 0)
+    {
+        node = function_call();
+    }
+
+    else if (tokens[pos].type == IDENTIFIER)
     {
         node = identifier(); // consume identifier and go to the next token
     }
@@ -486,10 +549,6 @@ Node *primary()
         add_child(node, match("(")); // consume '(' and go to the next token
         add_child(node, expression());
         add_child(node, match(")"));
-    }
-    else if (strcmp(tokens[pos].value, "&") == 0)
-    {
-        node = match("&"); // consume '&' and go to the next token
     }
     else
     {

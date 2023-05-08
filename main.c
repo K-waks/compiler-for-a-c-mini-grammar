@@ -29,9 +29,16 @@ int main()
     cpu_time_used = ((double)(end - start)) / CLOCKS_PER_SEC;
     printf("\n✅ Parsing successful. Execution time: %f seconds\n\n", cpu_time_used);
 
-   /* ******************************** CODE GENERATOR ********************************* */
+    /* ******************************** CODE GENERATOR ********************************* */
+
+    puts("\n🕑 Starting Intermediate Code Generation\n..................................");
+    start = clock();
 
     generate_code(root_node); // call the generator()
+
+    end = clock();
+    cpu_time_used = ((double)(end - start)) / CLOCKS_PER_SEC;
+    printf("\n✅ Code Generation successful. Execution time: %f seconds\n\n", cpu_time_used);
 
     return 0;
 }

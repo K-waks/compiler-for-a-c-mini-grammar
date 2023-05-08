@@ -3,7 +3,7 @@
 int label_count = 0;
 int temp_count = 0;
 char last_temp_var[10] = "";
-char temp[10];
+
 
 int new_label()
 {
@@ -18,161 +18,269 @@ char *last_temp()
 /* Traverse the parse tree and generate three-address code for each node */
 void generate_code(Node *node)
 {
-    if (node == NULL)
+    switch (node->type)
     {
-        return;
+
+    case PROGRAM:
+    {
+        for (int i = 0; i < node->num_children; i++)
+        {
+            generate_code(node->children[i]);
+        }
+        break;
     }
-    else
+
+    case FUNCTION_DECLARATION:
     {
-        switch (node->type)
-        {
+        printf("\n%s:\n", node->children[1]->value); // Print function label
 
-        case PROGRAM:
-            for (int i = 0; i < node->num_children; i++)
+        if (strcmp(node->children[4]->value, "BLOCK") == 0)
+        { // to take account of functions which don't have parameters e.g int sum(){}
+            generate_code(node->children[4]);
+        }
+        else if (strcmp(node->children[5]->value, "BLOCK") == 0)
+        { // function with parameters e.g int sum(int n){}
+            generate_code(node->children[5]);
+        }
+        break;
+    }
+
+    case PARAMETER_DECLARATION:
+    { // Parameter declarations don't generate code
+        break;
+    }
+
+    case VARIABLE_DECLARATION:
+    { // Variable declarations don't generate code
+        break;
+    }
+
+    case BLOCK:
+    {
+        for (int i = 1; i < node->num_children - 1; i++)
+        {
+            generate_code(node->children[i]);
+        }
+        break;
+    }
+
+    case IF_STATEMENT:
+    {
+        int L1 = new_label();
+        int L2 = new_label();
+        char temp[10];
+
+        generate_code(node->children[2]);             // Generate code for the condition
+        strcpy(temp, last_temp());                    // Store the variable result of the condition temporarily
+        sprintf(last_temp_var, "t%d", ++temp_count);  // Create new temporary variable
+        printf("NOT, %s, %s\n", last_temp_var, temp); // store the negation of the condition result in the new variable
+        printf("IF, %s, L%d\n", last_temp_var, L1);   // Jump to L1 if condition is false
+        generate_code(node->children[4]);             // Generate code for the if-block
+        printf("GOTO, L%d\n", L2);                    // Jump to L2 after if-block
+        printf("Label, L%d\n", L1);                   // Define label L1 for else-block
+        generate_code(node->children[6]);             // Generate code for the else-block
+        printf("Label, L%d\n", L2);                   // Define label L2 after if-else statement
+        break;
+    }
+
+    case WHILE_STATEMENT:
+    {
+        int L1 = new_label();
+        int L2 = new_label();
+        char temp[10];
+
+        printf("Label, L%d\n", L1);                   // Define label L1 for loop start
+        generate_code(node->children[2]);             // Generate code for the condition
+        strcpy(temp, last_temp());                    // Store the variable result of the condition temporarily
+        sprintf(last_temp_var, "t%d", ++temp_count);  // Create new temporary variable
+        printf("NOT, %s, %s\n", last_temp_var, temp); // store the negation of the condition result in the new variable
+        printf("IF, %s, L%d\n", last_temp(), L2);     // Jump to L2 if condition is false
+        generate_code(node->children[4]);             // Generate code for the loop body
+        printf("GOTO, L%d\n", L1);                    // Jump back to L1 for next iteration
+        printf("Label, L%d\n", L2);                   // Define label L2 after loop
+        break;
+    }
+
+    case RETURN_STATEMENT:
+    {
+        generate_code(node->children[2]);    // Generate code for the return value
+        printf("RETURN, %s\n", last_temp()); // Return the value
+        break;
+    }
+
+    case PRINTF_STATEMENT:
+    {
+        generate_code(node->children[2]);   // Generate code for the argument
+        printf("PRINT, %s\n", last_temp()); // Print the value of the argument
+        break;
+    }
+
+    case SCANF_STATEMENT:
+    {
+        generate_code(node->children[2]);  // Generate code for the argument
+        printf("SCAN, %s\n", last_temp()); // Read input and store it in the variable
+        break;
+    }
+
+    case FUNCTION_CALL:
+    {
+        char *function_name = node->children[0]->value; // Get the name of the function being called
+        if (strcmp(node->children[2]->value, ")") != 0)
+        {
+            for (int i = 2; i < node->num_children; i = i + 2) // Generate code for each argument
             {
                 generate_code(node->children[i]);
+                printf("ARG, %s\n", last_temp()); // Pass the argument to the function
             }
-            break;
+        }
 
-        case FUNCTION_DECLARATION:
-            printf("%s:\n", node->children[1]->value); // Print function label
+        sprintf(last_temp_var, "t%d", ++temp_count);                     // Create new temporary variable to hold the function result
+        printf("CALL, %s, %d\n", function_name, node->num_children - 4); // Call the function with the correct number of arguments
+        printf("MOVE, %s, RET\n", last_temp_var);                        // Move the function result to the temporary variable
 
-            if (strcmp(node->children[4]->value, "BLOCK") == 0)
-            {
-                generate_code(node->children[4]);
-            }
-            else if (strcmp(node->children[5]->value, "BLOCK") == 0)
-            {
-                generate_code(node->children[5]);
-            }
-            break;
+        break;
+    }
 
-        case PARAMETER_DECLARATION:
-            // Parameter declarations don't generate code
-            break;
+    case EXPRESSION:
+    {
+        char left_temp[10];
+        char right_temp[10];
 
-        case VARIABLE_DECLARATION:
-            // Variable declarations don't generate code
-            break;
-
-        case BLOCK:
-            for (int i = 1; i < node->num_children - 1; i++)
-            {
-                generate_code(node->children[i]);
-            }
-            break;
-
-        case IF_STATEMENT:
+        if (node->num_children == 2 && strcmp(node->children[0]->value, "-") == 0)
         {
-            int L1 = new_label();
-            int L2 = new_label();
-
-            generate_code(node->children[2]); // Generate code for the condition
-
-            strcpy(temp, last_temp());                    // Store the variable result of the condition temporarily
-            sprintf(last_temp_var, "t%d", ++temp_count);  // Create new temporary variable
-            printf("NOT, %s, %s\n", last_temp_var, temp); // store the negation of the condition result in the new variable
-            printf("IF, %s, L%d\n", last_temp_var, L1);   // Jump to L1 if condition is false
-            generate_code(node->children[4]);             // Generate code for the if-block
-            printf("GOTO, L%d\n", L2);                    // Jump to L2 after if-block
-            printf("Label, L%d\n", L1);                   // Define label L1 for else-block
-            generate_code(node->children[6]);             // Generate code for the else-block
-            printf("Label, L%d\n", L2);                   // Define label L2 after if-else statement
-            break;
+            generate_code(node->children[1]);
+            sprintf(last_temp_var, "t%d", ++temp_count);
+            printf("SUB, %s, 0, %s\n", last_temp_var, last_temp()); // Negate the value and store it in the temporary variable
         }
 
-        case WHILE_STATEMENT:
+        if (node->num_children == 1 && (strcmp(node->children[0]->value, "+") == 0 ||
+                                        strcmp(node->children[0]->value, "-") == 0 ||
+                                        strcmp(node->children[0]->value, "*") == 0 ||
+                                        strcmp(node->children[0]->value, "/") == 0 ||
+                                        strcmp(node->children[0]->value, "%") == 0 ||
+                                        strcmp(node->children[0]->value, "<") == 0 ||
+                                        strcmp(node->children[0]->value, ">") == 0 ||
+                                        strcmp(node->children[0]->value, "==") == 0 ||
+                                        strcmp(node->children[0]->value, "!=") == 0 ||
+                                        strcmp(node->children[0]->value, "<=") == 0 ||
+                                        strcmp(node->children[0]->value, ">=") == 0 ||
+                                        strcmp(node->children[0]->value, "&&") == 0 ||
+                                        strcmp(node->children[0]->value, "||") == 0 ||
+                                        strcmp(node->children[0]->value, "=") == 0))
         {
-            int L1 = new_label();
-            int L2 = new_label();
+            generate_code(node->children[0]->children[0]); // Generate code for the left-hand side of the addition
+            strcpy(left_temp, last_temp());                // Store the temporary variable holding the left-hand side
+            generate_code(node->children[0]->children[1]); // Generate code for the right-hand side of the addition
+            strcpy(right_temp, last_temp());               // Store the temporary variable holding the right-hand side
+            sprintf(last_temp_var, "t%d", ++temp_count);   // Create new temporary variable
 
-            printf("Label, L%d\n", L1);               // Define label L1 for loop start
-            generate_code(node->children[2]);         // Generate code for the condition
-            printf("IF, %s, L%d\n", last_temp(), L2); // Jump to L2 if condition is false
-            generate_code(node->children[4]);         // Generate code for the loop body
-            printf("GOTO, L%d\n", L1);                // Jump back to L1 for next iteration
-            printf("Label, L%d\n", L2);               // Define label L2 after loop
-            break;
+            if (strcmp(node->children[0]->value, "+") == 0)
+            {
+                printf("ADD, %s, %s, %s\n", last_temp_var, left_temp, right_temp); // Add the left-hand side and right-hand side and store it in the temporary variable
+            }
+            else if (strcmp(node->children[0]->value, "-") == 0)
+            {
+                printf("SUB, %s, %s, %s\n", last_temp_var, left_temp, right_temp); // Subtract the left-hand side and right-hand side and store it in the temporary variable
+            }
+            else if (strcmp(node->children[0]->value, "*") == 0)
+            {
+                printf("MUL, %s, %s, %s\n", last_temp_var, left_temp, right_temp); // Multiply the left-hand side and right-hand side and store it in the temporary variable
+            }
+            else if (strcmp(node->children[0]->value, "/") == 0)
+            {
+                printf("DIV, %s, %s, %s\n", last_temp_var, left_temp, right_temp); // Divide the left-hand side and right-hand side and store it in the temporary variable
+            }
+            else if (strcmp(node->children[0]->value, "%") == 0)
+            {
+                printf("MOD, %s, %s, %s\n", last_temp_var, left_temp, right_temp); // Divide the left by right-hand side and store remainder in the temporary variable
+            }
+            else if (strcmp(node->children[0]->value, "<") == 0)
+            {
+                printf("LT, %s, %s, %s\n", last_temp_var, left_temp, right_temp); // Bool of the left-hand side being less than right-hand side and store it in the temp var
+            }
+            else if (strcmp(node->children[0]->value, ">") == 0)
+            {
+                printf("GT, %s, %s, %s\n", last_temp_var, left_temp, right_temp); // Bool of the left-hand side being greater than right-hand side and store it in the temp var
+            }
+            else if (strcmp(node->children[0]->value, "==") == 0)
+            {
+                printf("EQ, %s, %s, %s\n", last_temp_var, left_temp, right_temp); // Bool of the left-hand side being equal to right-hand side and store it in the temp var
+            }
+            else if (strcmp(node->children[0]->value, "!=") == 0)
+            {
+                printf("NEQ, %s, %s, %s\n", last_temp_var, left_temp, right_temp); // Bool of the left-hand side being not equal to right-hand side, store it in the temp var
+            }
+            else if (strcmp(node->children[0]->value, "<=") == 0)
+            {
+                printf("LEQ, %s, %s, %s\n", last_temp_var, left_temp, right_temp); // Bool of the left-hand side being less than or equal to right-hand side and store it in the temp var
+            }
+            else if (strcmp(node->children[0]->value, ">=") == 0)
+            {
+                printf("GEQ, %s, %s, %s\n", last_temp_var, left_temp, right_temp); // Bool of the left-hand side being greater than or equal to right-hand side and store it in the temp var
+            }
+            else if (strcmp(node->children[0]->value, "&&") == 0)
+            {
+                printf("AND, %s, %s, %s\n", last_temp_var, left_temp, right_temp); // Store the AND of the left-hand side and right-hand side in the temp var
+            }
+            else if (strcmp(node->children[0]->value, "||") == 0)
+            {
+                printf("OR, %s, %s, %s\n", last_temp_var, left_temp, right_temp); // Store the OR of the left-hand side and right-hand side in the temp var
+            }
+            else if (strcmp(node->children[0]->value, "=") == 0)
+            {
+                printf("EQ, %s, %s, %s\n", last_temp_var, left_temp, right_temp); // Store the right hand side into the left-hand side
+            }
         }
-
-        case RETURN_STATEMENT:
-            generate_code(node->children[0]);    // Generate code for the return value
-            printf("RETURN, %s\n", last_temp()); // Return the value
-            break;
-
-        case EXPRESSION_STATEMENT:
+        else if (node->num_children == 1)
         {
-            if (node->num_children == 1)
-            {
-                generate_code(node->children[0]);
-                // No need to store the result in a temporary variable, so don't do anything
-            }
-            else if (node->num_children == 2 && strcmp(node->children[0]->value, "-") == 0)
-            {
-                generate_code(node->children[1]);
-                sprintf(last_temp_var, "t%d", ++temp_count);
-                printf("SUB, %s, 0, %s\n", last_temp_var, last_temp()); // Negate the value and store it in the temporary variable
-            }
-            else if (node->num_children == 3 && strcmp(node->children[1]->value, "+") == 0)
-            {
-                generate_code(node->children[0]);                                   // Generate code for the left-hand side of the addition
-                char *left_temp = last_temp();                                      // Store the temporary variable holding the left-hand side
-                generate_code(node->children[2]);                                   // Generate code for the right-hand side of the addition
-                sprintf(last_temp_var, "t%d", ++temp_count);                        // Create new temporary variable
-                printf("ADD, %s, %s, %s\n", last_temp_var, left_temp, last_temp()); // Add the left-hand side and right-hand side and store it in the temporary variable
-            }
-            else if (node->num_children == 3 && strcmp(node->children[1]->value, "-") == 0)
-            {
-                generate_code(node->children[0]);                                   // Generate code for the left-hand side of the subtraction
-                char *left_temp = last_temp();                                      // Store the temporary variable holding the left-hand side
-                generate_code(node->children[2]);                                   // Generate code for the right-hand side of the subtraction
-                sprintf(last_temp_var, "t%d", ++temp_count);                        // Create new temporary variable
-                printf("SUB, %s, %s, %s\n", last_temp_var, left_temp, last_temp()); // Subtract the right-hand side from the left-hand side and store it in the temporary variable
-            }
-            else if (node->num_children == 3 && strcmp(node->children[1]->value, "*") == 0)
-            {
-                generate_code(node->children[0]);                                   // Generate code for the left-hand side of the multiplication
-                char *left_temp = last_temp();                                      // Store the temporary variable holding the left-hand side
-                generate_code(node->children[2]);                                   // Generate code for the right-hand side of the multiplication
-                sprintf(last_temp_var, "t%d", ++temp_count);                        // Create new temporary variable
-                printf("MUL, %s, %s, %s\n", last_temp_var, left_temp, last_temp()); // Multiply the left-hand side and right-hand side and store it in the temporary variable
-            }
-            else if (node->num_children == 3 && strcmp(node->children[1]->value, "/") == 0)
-            {
-                generate_code(node->children[0]);                                   // Generate code for the left-hand side of the division
-                char *left_temp = last_temp();                                      // Store the temporary variable holding the left-hand side
-                generate_code(node->children[2]);                                   // Generate code for the right-hand side ofthe division
-                sprintf(last_temp_var, "t%d", ++temp_count);                        // Create new temporary variable
-                printf("DIV, %s, %s, %s\n", last_temp_var, left_temp, last_temp()); // Divide the left-hand side by the right-hand side and store it in the temporary variable
-            }
-            else
-            {
-                fprintf(stderr, "Error: Invalid expression statement.\n");
-                exit(EXIT_FAILURE);
-            }
-            break;
+            generate_code(node->children[0]);
         }
 
-        case TERMINAL:
-
-            if (strcmp(node->value, "Unary") == 0)
-            {
-                generate_code(node->children[1]);
-                printf("SUB, %s, 0, %s\n", last_temp_var, last_temp()); // Negate the value and store it in the temporary variable
-
-                strcpy(temp, last_temp_var);                     // Store the temporary variable holding the negation
-                sprintf(last_temp_var, "t%d", ++temp_count);     // Create another new temporary variable
-                printf("ASSIGN, %s, %s\n", last_temp_var, temp); // Assign negation value to the latter temporary variable
-            }
-            else
-            {
-                sprintf(last_temp_var, "t%d", ++temp_count);            // Create new temporary variable
-                printf("ASSIGN, %s, %s\n", last_temp_var, node->value); // Assign terminal value to temporary variable
-            }
-            break;
-        default:
-            fprintf(stderr, "Error: Unknown node type: %d\n", node->type);
-            exit(1);
+        else
+        {
+            fprintf(stderr, "Error: Invalid expression statement.\n");
+            exit(EXIT_FAILURE);
         }
+        break;
+    }
+
+    case TERMINAL:
+    {
+        char temp[10];
+
+        if (strcmp(node->value, "Unary") == 0)
+        {
+            generate_code(node->children[1]);
+            printf("SUB, %s, 0, %s\n", last_temp_var, last_temp()); // Negate the value and store it in the temporary variable
+
+            strcpy(temp, last_temp_var);                     // Store the temporary variable holding the negation
+            sprintf(last_temp_var, "t%d", ++temp_count);     // Create another new temporary variable
+            printf("ASSIGN, %s, %s\n", last_temp_var, temp); // Assign negation value to the latter temporary variable
+        }
+        else
+        {
+            sprintf(last_temp_var, "t%d", ++temp_count);            // Create new temporary variable
+            printf("ASSIGN, %s, %s\n", last_temp_var, node->value); // Assign terminal value to temporary variable
+        }
+        break;
+    }
+
+    case UNARY:
+    {
+        char temp[10];
+
+        generate_code(node->children[1]);
+        strcpy(temp, last_temp_var);
+        sprintf(last_temp_var, "t%d", ++temp_count);
+        printf("SUB, %s, 0, %s\n", last_temp_var, temp); // Negate the value and store it in the temporary variable
+
+        break;
+    }
+
+    default:
+    {
+        fprintf(stderr, "Error: Unknown node type: %d\n", node->type);
+        exit(1);
+    }
     }
 }
