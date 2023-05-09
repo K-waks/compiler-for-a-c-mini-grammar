@@ -66,7 +66,6 @@ Node *root_node;
 Node *new_node(char *value, Node_Type type);
 void add_child(Node *parent, Node *child);
 void print_tree(Node *node, int depth, int index);
-
 void parser();
 Node *declaration();
 Node *variable_declaration();
@@ -98,7 +97,9 @@ Node *number();
 Node *string();
 Node *match(char *value);
 
-char *new_temp();
+// function prototypes in tac.c
+int new_label();
+void new_temp();
 void generate_code(Node *node);
 
 #endif
