@@ -584,9 +584,11 @@ Node *primary()
     }
     else if (strcmp(tokens[pos].value, "(") == 0)
     {
-        add_child(node, match("(")); // consume '(' and go to the next token
-        add_child(node, expression());
-        add_child(node, match(")"));
+        Node *nested = new_node("NESTED", NESTED);
+        add_child(nested, match("(")); // consume '(' and go to the next token
+        add_child(nested, expression());
+        add_child(nested, match(")"));
+        node = nested;
     }
     else
     {

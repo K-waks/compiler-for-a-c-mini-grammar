@@ -19,13 +19,35 @@ Token_Type get_token(FILE *fp, char *buffer)
             }
             continue;
         }
+
+        // else if (c == '/' && (c = fgetc(fp)) == '/')
+        // {
+        //     while ((c = fgetc(fp)) != EOF && c != '\n')
+        //         ;
+        //     continue;
+        // }
+        
         // comments are also ignored
-        else if (c == '/' && (c = fgetc(fp)) == '/')
+        else if (c == '/')
         {
-            while ((c = fgetc(fp)) != EOF && c != '\n')
-                ;
-            continue;
+            int next = fgetc(fp);
+            if (next == '/')
+            {
+                while ((c = fgetc(fp)) != EOF && c != '\n')
+                {
+                    continue;
+                }
+                continue;
+            }
+            else
+            {
+                ungetc(next, fp);
+                buffer[buffer_len++] = c;
+                buffer[buffer_len] = '\0';
+                return OPERATOR;
+            }
         }
+
         // TOKEN KEYWORD and TOKEN IDENTIFIER
         else if (isalpha(c) || c == '_')
         {

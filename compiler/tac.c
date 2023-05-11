@@ -276,6 +276,11 @@ void generate_code(Node *node)
 
         break;
     }
+    case NESTED:
+    {
+        generate_code(node->children[1]);
+        break;
+    }
 
     case UNARY:
     {
