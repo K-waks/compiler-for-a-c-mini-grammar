@@ -131,6 +131,21 @@ void generate_code(Node *node)
         break;
     }
 
+    case ASSIGNMENT_STATEMENT:
+    {
+        char left_temp[10];
+        char right_temp[10];
+
+        generate_code(node->children[0]->children[0]);                   // Generate code for the left-hand side of the addition
+        strcpy(left_temp, temp_var);                                     // Store the temporary variable holding the left-hand side
+        generate_code(node->children[0]->children[1]);                   // Generate code for the right-hand side of the addition
+        strcpy(right_temp, temp_var);                                    // Store the temporary variable holding the right-hand side
+        new_temp();                                                      // Create new temporary variable
+        printf("ASSIGN, %s, %s, %s\n", temp_var, left_temp, right_temp); // Store the right hand side into the left-hand side
+
+        break;
+    }
+
     case FUNCTION_CALL:
     {
         char *function_name = node->children[0]->value; // Get the name of the function being called
@@ -237,7 +252,7 @@ void generate_code(Node *node)
             }
             else if (strcmp(node->children[0]->value, "=") == 0)
             {
-                printf("EQ, %s, %s, %s\n", temp_var, left_temp, right_temp); // Store the right hand side into the left-hand side
+                printf("ASSIGN, %s, %s, %s\n", temp_var, left_temp, right_temp); // Store the right hand side into the left-hand side
             }
         }
         else if (node->num_children == 1)

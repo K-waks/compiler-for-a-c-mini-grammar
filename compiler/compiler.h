@@ -45,7 +45,9 @@ typedef enum
     PRINTF_STATEMENT,
     SCANF_STATEMENT,
     FUNCTION_CALL,
+    ASSIGNMENT_STATEMENT,
     EXPRESSION,
+    NESTED,
     UNARY,
     TERMINAL
 } Node_Type;
@@ -79,6 +81,7 @@ Node *return_statement();
 Node *expression_statement();
 Node * printf_statement();
 Node * scanf_statement();
+Node *assignment_statement();
 Node * function_call();
 Node *expression();
 Node *assignment();

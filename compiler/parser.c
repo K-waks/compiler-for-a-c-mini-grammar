@@ -1,15 +1,16 @@
 #include "lexer.c"
 
 int pos = 0; // indexes the tokens.
+char *node_value;
 
 /* ********************************** HELPER FUNCTIONS ******************************************/
 
-Node *new_node(char *value, Node_Type type) // function to create a new node
+Node *new_node(char *node_value, Node_Type type) // function to create a new node
 {
     Node *node = (Node *)malloc(sizeof(Node));
     node->type = type;
     node->num_children = 0;
-    node->value = value;
+    node->value = node_value;
 
     return node;
 }
@@ -46,7 +47,8 @@ void print_tree(Node *node, int depth, int index) // updated to include an integ
 
 void parser()
 {
-    root_node = new_node("PROGRAM", PROGRAM);
+    node_value = "PROGRAM";
+    root_node = new_node(node_value, PROGRAM);
 
     while (tokens[pos].type != EOF)
     {
@@ -77,6 +79,7 @@ Node *declaration()
     }
     else if (tokens[pos].type == KEYWORD && tokens[pos + 1].type == IDENTIFIER)
     {
+
         node = variable_declaration();
     }
     else
@@ -90,7 +93,8 @@ Node *declaration()
 
 Node *variable_declaration()
 {
-    Node *node = new_node("VARIABLE DECLARATION", VARIABLE_DECLARATION);
+    node_value = "VARIABLE DECLARATION";
+    Node *node = new_node(node_value, VARIABLE_DECLARATION);
 
     add_child(node, type_specifier()); // consume int, float, char or void and go to the next token
     add_child(node, identifier());     // consume identifier and go to the next token;
@@ -101,7 +105,8 @@ Node *variable_declaration()
 
 Node *function_declaration()
 {
-    Node *node = new_node("FUNCTION DECLARATION", FUNCTION_DECLARATION);
+    node_value = "FUNCTION DECLARATION";
+    Node *node = new_node(node_value, FUNCTION_DECLARATION);
 
     add_child(node, type_specifier()); // consume int, float, char or void and go to the next token
     add_child(node, identifier());     // consume identifier and go to the next token
@@ -120,7 +125,8 @@ Node *function_declaration()
 
 Node *parameter_declaration()
 {
-    Node *node = new_node("PARAMETER DECLARATION", PARAMETER_DECLARATION);
+    node_value = "PARAMETER DECLARATION";
+    Node *node = new_node(node_value, PARAMETER_DECLARATION);
 
     add_child(node, type_specifier()); // consume int, char or float and go to the next token
     add_child(node, identifier());     // consume identifier and go to the next token
@@ -137,7 +143,8 @@ Node *parameter_declaration()
 
 Node *block()
 {
-    Node *node = new_node("BLOCK", BLOCK);
+    node_value = "BLOCK";
+    Node *node = new_node(node_value, BLOCK);
 
     add_child(node, match("{")); // consume '{' and go to the next token
 
@@ -146,6 +153,11 @@ Node *block()
         if (tokens[pos].type == KEYWORD && (strcmp(tokens[pos].value, "int") == 0 || strcmp(tokens[pos].value, "float") == 0 || strcmp(tokens[pos].value, "char") == 0))
         {
             add_child(node, variable_declaration());
+            
+            while (tokens[pos].type == KEYWORD && (strcmp(tokens[pos].value, "int") == 0 || strcmp(tokens[pos].value, "float") == 0 || strcmp(tokens[pos].value, "char") == 0))
+            {
+                add_child(node, variable_declaration());
+            }
         }
 
         add_child(node, statement());
@@ -185,7 +197,8 @@ Node *statement()
 
 Node *if_statement()
 {
-    Node *node = new_node("IF STATEMENT", IF_STATEMENT);
+    node_value = "IF STATEMENT";
+    Node *node = new_node(node_value, IF_STATEMENT);
 
     add_child(node, match("if")); // consume 'if' and go to the next token
     add_child(node, match("("));  // consume '(' and go to the next token
@@ -200,7 +213,8 @@ Node *if_statement()
 
 Node *while_statement()
 {
-    Node *node = new_node("WHILE STATEMENT", WHILE_STATEMENT);
+    node_value = "WHILE STATEMENT";
+    Node *node = new_node(node_value, WHILE_STATEMENT);
 
     add_child(node, match("while")); // consume 'while' and go to the next token
     add_child(node, match("("));     // consume '(' and go to the next token
@@ -215,17 +229,21 @@ Node *expression_statement()
 {
     Node *node = NULL;
 
-    if (strcmp(tokens[pos].value, "printf") == 0)
+    if (strcmp(tokens[pos].value, "printf") == 0) // e.g printf("Hello, World");
     {
         node = printf_statement();
     }
-    else if (strcmp(tokens[pos].value, "scanf") == 0)
+    else if (strcmp(tokens[pos].value, "scanf") == 0) // e.g scanf("%d", &a);
     {
         node = scanf_statement();
     }
-    else if (tokens[pos].type == IDENTIFIER && strcmp(tokens[pos + 1].value, "(") == 0)
+    else if (tokens[pos].type == IDENTIFIER && strcmp(tokens[pos + 1].value, "(") == 0) // e.g sum();
     {
         node = function_call();
+    }
+    else if (tokens[pos].type == IDENTIFIER && strcmp(tokens[pos + 1].value, "=") == 0) // e.g a = 7;
+    {
+        node = assignment_statement();
     }
 
     add_child(node, match(";")); // consume ';' and go to the next token
@@ -235,7 +253,8 @@ Node *expression_statement()
 
 Node *printf_statement()
 {
-    Node *node = new_node("PRINTF_STATEMENT", PRINTF_STATEMENT);
+    node_value = "PRINTF STATEMENT";
+    Node *node = new_node(node_value, PRINTF_STATEMENT);
     add_child(node, match("printf"));
     add_child(node, match("("));
 
@@ -261,7 +280,8 @@ Node *printf_statement()
 
 Node *scanf_statement()
 {
-    Node *node = new_node("SCANF_STATEMENT", SCANF_STATEMENT);
+    node_value = "SCANF STATEMENT";
+    Node *node = new_node(node_value, SCANF_STATEMENT);
     add_child(node, match("scanf"));
     add_child(node, match("("));
 
@@ -278,9 +298,24 @@ Node *scanf_statement()
     return node;
 }
 
+Node *assignment_statement()
+{
+    node_value = "ASSIGNMENT STATEMENT";
+    Node *node = new_node(node_value, ASSIGNMENT_STATEMENT);
+
+    Node *id_node = identifier();
+    Node *op_node = match("=");
+    add_child(op_node, id_node);
+    add_child(op_node, expression());
+    add_child(node, op_node);
+
+    return node;
+}
+
 Node *function_call()
 {
-    Node *node = new_node("FUNCTION_CALL", FUNCTION_CALL);
+    node_value = "FUNCTION CALL";
+    Node *node = new_node(node_value, FUNCTION_CALL);
     add_child(node, identifier());
     add_child(node, match("("));
 
@@ -295,7 +330,8 @@ Node *function_call()
 
 Node *return_statement()
 {
-    Node *node = new_node("RETURN STATEMENT", RETURN_STATEMENT);
+    node_value = "RETURN STATEMENT";
+    Node *node = new_node(node_value, RETURN_STATEMENT);
 
     add_child(node, match("return")); // consume return and go to the next token
     add_child(node, match("("));      // consume '(' and go to the next token
@@ -311,7 +347,8 @@ Node *return_statement()
 
 Node *expression()
 {
-    Node *node = new_node("EXPRESSION", EXPRESSION);
+    node_value = "EXPRESSION";
+    Node *node = new_node(node_value, EXPRESSION);
     add_child(node, nested());
     return node;
 }
@@ -504,7 +541,8 @@ Node *unary()
 
     if (tokens[pos].type == OPERATOR && (strcmp(tokens[pos].value, "-") == 0 || strcmp(tokens[pos].value, "!") == 0))
     {
-        node = new_node("Unary", UNARY);
+        node_value = "Unary";
+        node = new_node(node_value, UNARY);
         if (strcmp(tokens[pos].value, "-") == 0)
         {
             add_child(node, match("-")); // consume '-' and go to the next token
@@ -566,7 +604,7 @@ Node *type_specifier()
 {
     if (!(strcmp(tokens[pos].value, "int") == 0 || strcmp(tokens[pos].value, "void") == 0 || strcmp(tokens[pos].value, "char") == 0 || strcmp(tokens[pos].value, "float") == 0))
     {
-        printf("⛔ SYNTAX ERROR! Expected type-specifier, but got %s.\n\n", tokens[pos].value);
+        printf("⛔ SYNTAX ERROR! Expected type-specifier, but got %s in %s.\n\n", tokens[pos].value, node_value);
         exit(EXIT_FAILURE);
     }
 
@@ -580,7 +618,7 @@ Node *identifier()
 {
     if (tokens[pos].type != IDENTIFIER)
     {
-        printf("⛔ SYNTAX ERROR! Expected identifier, but got %s.\n\n", tokens[pos].value);
+        printf("⛔ SYNTAX ERROR! Expected identifier, but got %s in %s.\n\n", tokens[pos].value, node_value);
         exit(EXIT_FAILURE);
     }
 
@@ -594,7 +632,7 @@ Node *number()
 {
     if (tokens[pos].type != NUMBER)
     {
-        printf("⛔ SYNTAX ERROR! Expected number, but got %s.\n\n", tokens[pos].value);
+        printf("⛔ SYNTAX ERROR! Expected number, but got %s in %s.\n\n", tokens[pos].value, node_value);
         exit(EXIT_FAILURE);
     }
 
@@ -608,7 +646,7 @@ Node *string()
 {
     if (tokens[pos].type != STRING)
     {
-        printf("⛔ SYNTAX ERROR! Expected string, but got %s.\n\n", tokens[pos].value);
+        printf("⛔ SYNTAX ERROR! Expected string, but got %s in %s.\n\n", tokens[pos].value, node_value);
         exit(EXIT_FAILURE);
     }
 
@@ -622,7 +660,7 @@ Node *match(char *value)
 {
     if (strcmp(tokens[pos].value, value) != 0)
     {
-        printf("⛔ SYNTAX ERROR! Expected '%s' but got '%s'\n\n", value, tokens[pos].value);
+        printf("⛔ SYNTAX ERROR! Expected '%s' but got '%s' in %s\n\n", value, tokens[pos].value, node_value);
         exit(EXIT_FAILURE);
     }
 
