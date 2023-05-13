@@ -53,8 +53,12 @@
 
 int main()
 {
-    while (y67 > 68.9)
+    if (varx >= 8.98)
     {
-        y = y * 34;
+        x = x * 2;
+    }
+    else
+    {
+        x = x - 2.78;
     }
 }
